@@ -112,25 +112,6 @@ libvirt_host_networks: |-
     ) | sum(start=[])
   }}
 
-# Default pool name, to be overridden.
-libvirt_host_def_pool: '{{ (libvirt_host_pools | first).name }}'
-
-# Pool configuration indexed by name.
-libvirt_host_pools_by_name: |-
-  {{
-    libvirt_host_pools |
-    json_query('[*].{key: name, value: @}') |
-    items2dict
-  }}
-
-# Simplified pool information for guests.
-libvirt_host_pool_paths: |-
-  {{
-    libvirt_host_pools |
-    json_query('[?path].{key: name, value: path}') |
-    items2dict
-  }}
-
 # Overwrite values in the VM definitions.
 libvirt__vms_forced:
   enable_spice: true
@@ -157,9 +138,17 @@ _libvirt__my_guests_q: >-
 # Compile VM definitions for hosts in `libvirt__define_guests`, which defaults
 # to `libvirt__local_guests`.
 libvirt__define_guests: '{{ libvirt__local_guests }}'
-libvirt_vms: |-
+libvirt__guest_defs: |-
   {{
-    libvirt__define_guests |
-    map('extract', hostvars, 'libvirt__vm_def') |
-    map('combine', libvirt__vms_forced)
+    dict(
+      libvirt__define_guests |
+      zip(
+        libvirt__define_guests |
+        map('extract', hostvars, 'libvirt__vm_def') |
+        map('combine', libvirt__vms_forced)
+      )
+    )
   }}
+
+# Feed the `libvirt_vm` role.
+libvirt_vms: '{{ libvirt__guest_defs.values() }}'

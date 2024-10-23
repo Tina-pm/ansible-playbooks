@@ -6,6 +6,9 @@
 
 # Shortcut to access host's configuration values.
 vm_hostvars: '{{ hostvars[vm_host] }}'
+# XXX: Be careful not to use this in variables that are retrieved from the host
+# (i.e.: all VM definitions), as they create circular dependencies that cannot
+# be resolved.
 
 # Connection values.
 ansible_connection: community.libvirt.libvirt_qemu
@@ -37,10 +40,6 @@ vm_image_variant: genericcloud
 vm_image_url:
   http://cloud.debian.org/images/cloud/{{ apt__distro_name }}/latest/debian-{{
     apt__distro_ver }}-{{ vm_image_variant }}-amd64.qcow2
-
-# Convenience variables.
-vm_host_pool_paths: '{{ vm_hostvars.libvirt_host_pool_paths }}'
-vm_host_def_pool: '{{ vm_hostvars.libvirt_host_def_pool }}'
 
 vm_volume__00_root:
   dev: /dev/vg0/vm-{{ inventory_hostname }}-root
