@@ -1,0 +1,8 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+- name: Install and configure ferm
+  hosts: all
+  roles:
+    - role: tina_pm.common.ferm
+      when: ferm__enable
+      tags: ferm
