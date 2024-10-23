@@ -1,0 +1,304 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+groups:
+  - name: General alerts
+    rules:
+      - alert: InstanceDown
+        expr: up == 0 or pg_up == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: Instance {{ $labels.instance }} down
+          generic_summary: Service down
+          description: >-
+            {{ $labels.instance }} of job {{ $labels.job }} has been down for
+            more than 5 minutes.
+
+  - name: Node alerts
+    rules:
+      - alert: HighCpuUsage
+        expr: |
+          (
+            1 - instance:node_cpu_seconds_total:avg_rate5m{
+              job="node", mode="idle"
+            }
+          ) * 100 > 90
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: CPU usage in {{ $labels.instance }} is too high
+          generic_summary: CPU usage too high
+          description: >-
+            The CPU usage in {{ $labels.instance }} has been over 90% for more
+            than 5 minutes.
+
+      - alert: HighLoadAvg
+        expr: node_load15{job="node"} > 100
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: The load average in {{ $labels.instance }} is too high
+          generic_summary: Load average too high
+          description: >-
+            The 15-minute load average in {{ $labels.instance }} has been over
+            100 for more than 5 minutes.
+
+      - alert: MemFull
+        expr: |  # noqa: yaml[line-length]
+          instance:node_memory_MemUsed_bytes_per_node_memory_MemTotal_bytes:ratio{
+            job="node"
+          } * 100 > 80
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: Memory usage in {{ $labels.instance }} is too high
+          generic_summary: Memory usage too high
+          description: >-
+            The memory usage in {{ $labels.instance }} has been over 80% for
+            more than 5 minutes.
+      - alert: MemFull
+        expr: |  # noqa: yaml[line-length]
+          instance:node_memory_MemUsed_bytes_per_node_memory_MemTotal_bytes:ratio{
+            job="node"
+          } * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Memory usage in {{ $labels.instance }} is critical
+          generic_summary: Memory usage critical
+          description: >-
+            The memory usage in {{ $labels.instance }} has been over 90% for
+            more than 5 minutes.
+
+      - alert: FSFull
+        expr: |  # noqa: yaml[line-length]
+          instance:node_filesystem_avail_bytes_per_node_filesystem_size_bytes:ratio{
+            job="node"
+          } * 100 <= 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            Filesystem {{ $labels.mountpoint }} in {{ $labels.instance }} is
+            almost full
+          generic_summary: Filesystem almost full
+          description: >-
+            The {{ $labels.mountpoint }} filesystem in {{ $labels.instance }}
+            has less than 5% available space.
+      - alert: FSFull
+        expr: |  # noqa: yaml[line-length]
+          instance:node_filesystem_avail_bytes_per_node_filesystem_size_bytes:ratio{
+            job="node"
+          } * 100 <= .5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: >-
+            Filesystem {{ $labels.mountpoint }} in {{ $labels.instance }} is
+            full
+          generic_summary: Filesystem full
+          description: >-
+            The {{ $labels.mountpoint }} filesystem in {{ $labels.instance }}
+            is full.
+
+      - alert: FSFullSoon
+        expr: |
+          predict_linear(
+            instance:node_filesystem_avail_bytes:sum{
+              job="node"
+            }[12h], 24 * 3600
+          ) <= 0
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: >-
+            Filesystem {{ $labels.mountpoint }} in {{ $labels.instance }} will
+            fill soon
+          generic_summary: Filesystem full soon
+          description: >-
+            The {{ $labels.mountpoint }} filesystem in {{ $labels.instance }}
+            will be full in 24 hours at the current rate.
+      - alert: FSFullSoon
+        expr: |
+          predict_linear(
+            instance:node_filesystem_avail_bytes:sum{
+              job="node"
+            }[2h], 4 * 3600
+          ) <= 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            Filesystem {{ $labels.mountpoint }} in {{ $labels.instance }} will
+            fill VERY soon
+          generic_summary: Filesystem full VERY soon
+          description: >-
+            The {{ $labels.mountpoint }} filesystem in {{ $labels.instance }}
+            will be full in 4 hours at the current rate.
+
+      - alert: MemFullSoon
+        expr: |  # noqa: yaml[line-length]
+          predict_linear(
+            instance:node_memory_MemUsed_bytes_per_node_memory_MemTotal_bytes:ratio{
+              job="node"
+            }[12h], 24 * 3600
+          ) * 100 > 99
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: >-
+            Memory in {{ $labels.instance }} will fill in 24h
+          generic_summary: Memory full soon
+          description: >-
+            The memory usage in {{ $labels.instance }} in {{ $labels.instance }}
+            will reach 100% in 24 hours at the current rate.
+      - alert: MemFullSoon
+        expr: |  # noqa: yaml[line-length]
+          predict_linear(
+            instance:node_memory_MemUsed_bytes_per_node_memory_MemTotal_bytes:ratio{
+              job="node"
+            }[2h], 4 * 3600
+          ) * 100 > 99
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            Memory in {{ $labels.instance }} will fill in 4h
+          generic_summary: Memory full VERY soon
+          description: >-
+            The memory usage in {{ $labels.instance }} in {{ $labels.instance }}
+            will reach 100% in 4 hours at the current rate.
+
+      - alert: ProcessNearFDLimits
+        expr: process_open_fds / process_max_fds * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            The process in {{ $labels.instance }} has too many files open.
+          generic_summary: Too many files open
+          description: >-
+            The process for {{ $labels.job }} in {{ $labels.instance }} has
+            {{ $value }}% of available file descriptors in use.
+
+  - name: Blackbox exporter alerts
+    rules:
+      - alert: ProbeFailure
+        expr: probe_success{job="blackbox"} == 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: >-
+            The probe to {{ $labels.instance }} has failed
+          generic_summary: Blackbox probe failed
+          description: >-
+            The {{ $labels.module }} probe to {{ $labels.instance }} has failed
+            due to protocol errors or failed checks.
+
+      - alert: HTTPSNotUsed
+        expr: probe_http_ssl{job="blackbox", module=~"https(_ipv6)?"} == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            The HTTP server at {{ $labels.instance }} did not force SSL
+          generic_summary: HTTPS not used
+          description: >-
+            The HTTP server at {{ $labels.instance }} did not redirect to
+            HTTPS, or SSL failed.
+
+      - alert: SSLCertExpiringSoon
+        expr: |
+          probe_ssl_earliest_cert_expiry{job="blackbox"} - time() < 86400 * 15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            The SSL certificate at {{ $labels.instance }} will expire soon
+          generic_summary: SSL certificate expiring soon
+          description: >-
+            The SSL certificate at {{ $labels.instance }} will expire in
+            {{ humanizeDuration $value }} days.
+      - alert: SSLCertExpiringSoon
+        expr: |
+          probe_ssl_earliest_cert_expiry{job="blackbox"} - time() < 86400 * 7
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: >-
+            The SSL certificate at {{ $labels.instance }} will expire VERY
+            soon
+          generic_summary: SSL certificate expiring VERY soon
+          description: >-
+            The SSL certificate at {{ $labels.instance }} will expire in
+            {{ humanizeDuration $value }} days.
+
+  - name: Cronjob alerts
+    rules:
+      - alert: FailedCronJob
+        expr: batch_last_finish_seconds > batch_last_success_seconds
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            Cronjob {{ $labels.job }} in {{ $labels.instance }} has failed
+          generic_summary: Cronjob failed
+          description: >-
+            The last run of cronjob {{ $labels.job }} in {{ $labels.instance }}
+            has failed.
+
+      - alert: SlowCronJob
+        expr: batch_running_time_seconds > 7200
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: >-
+            Cronjob {{ $labels.job }} in {{ $labels.instance }} is too slow
+          generic_summary: Cronjob too slow
+          description: >-
+            The last run of cronjob {{ $labels.job }} in {{ $labels.instance }}
+            has taken more than 2 hours.
+
+      - alert: StuckCronJob
+        expr: batch_running_time_seconds > 14400
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            Cronjob {{ $labels.job }} in {{ $labels.instance }} is stuck
+          generic_summary: Cronjob stuck
+          description: >-
+            The last run of cronjob {{ $labels.job }} in {{ $labels.instance }}
+            has taken more than 4 hours, and it is considered stuck/hung.
+
+      - alert: MissingCronJob
+        expr: time() - batch_last_start_seconds > batch_period_seconds
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: >-
+            Cronjob {{ $labels.job }} in {{ $labels.instance }} has not run
+          generic_summary: Cronjob missing
+          description: >-
+            The cronjob {{ $labels.job }} in {{ $labels.instance }} has not run
+            in the expected period.

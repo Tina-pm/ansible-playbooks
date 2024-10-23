@@ -1,0 +1,27 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+groups:
+  - name: Cronjob rules
+    rules:
+      - record: batch_running_time_seconds
+        expr: |
+          (
+            (
+              (batch_last_finish_seconds - batch_last_start_seconds) > 0
+            ) or (
+              time() - batch_last_start_seconds
+            )
+          )
+
+      - record: batch_period_seconds
+        expr: |
+          (
+            batch_last_start_seconds{job=~"monthly.*"} * 0 + 3600 * 24 * 31
+          ) or (
+            batch_last_start_seconds{job=~"weekly.*"} * 0 + 3600 * 24 * 7
+          ) or (
+            batch_last_start_seconds{job=~"daily.*"} * 0 + 3600 * 24
+          ) or (
+            batch_last_start_seconds * 0 + 3600 * 24 * 7
+          )
+          # weekly by default
