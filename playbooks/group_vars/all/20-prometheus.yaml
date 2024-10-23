@@ -1,0 +1,208 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults for prometheus role.
+# =============================================================================
+
+prometheus__install_ferm_svc: '{{ ferm__enable | bool }}'
+prometheus__allow_from: '{{ internal_networks }}'
+
+prometheus__rules__base:
+  - files/prometheus/rules/node-basic.rules.yml
+  - files/prometheus/rules/cron.rules.yml
+  - files/prometheus/rules/alerts.yml
+
+# Automatic scraping of inventory hosts, segregated by environment.
+# -----------------------------------------------------------------------------
+
+prometheus__scrape_domain: '{{ inventory_domain_name }}'
+prometheus__prom_servers_group: prometheus_servers
+prometheus__am_servers_group: alertmanager_servers
+
+prometheus__monitored_prometheus__inventory: |-
+  {{
+    groups[prometheus__prom_servers_group] | sort |
+    map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+    map('regex_replace', '^(.*)$', '\1:9090') |
+    sort | list
+  }}
+prometheus__alertmanagers__inventory: |-
+  {{
+    groups[prometheus__am_servers_group] | sort |
+    map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+    map('regex_replace', '^(.*)$', '\1:9093') |
+    sort | list
+  }}
+
+prometheus__scrape_configs__00_inventory_node:
+  - job_name: node
+    static_configs:
+      - targets: '{{ _prometheus_targets.node.prod }}'
+        labels:
+          env: prod
+      - targets: '{{ _prometheus_targets.node.test }}'
+        labels:
+          env: test
+      - targets: '{{ _prometheus_targets.node.dev }}'
+        labels:
+          env: dev
+
+prometheus__scrape_configs__01_inventory_mtail:
+  - job_name: mtail
+    metric_relabel_configs: |-
+      {{
+        _mtail_relabel_configs['apache'] + _mtail_relabel_configs['postfix']
+      }}
+    static_configs:
+      - targets: '{{ _prometheus_targets.mtail.prod }}'
+        labels:
+          env: prod
+      - targets: '{{ _prometheus_targets.mtail.test }}'
+        labels:
+          env: test
+      - targets: '{{ _prometheus_targets.mtail.dev }}'
+        labels:
+          env: dev
+
+# Templates to generate scrape configs from inventory.
+_hosts_by_env:
+  prod: |-
+    {{
+      groups['site'] |
+      difference(groups['test']) |
+      difference(groups['dev'])
+    }}
+  test: |-
+    {{
+      groups['site'] |
+      intersect(groups['test'])
+    }}
+  dev: |-
+    {{
+      groups['site'] |
+      intersect(groups['dev'])
+    }}
+
+_hosts_nodeexp_enabled: |-
+  {{
+    hostvars.values() |
+    selectattr('node_exporter__enable') |
+    map(attribute='inventory_hostname')
+  }}
+_hosts_mtail_enabled: |-
+  {{
+    hostvars.values() |
+    selectattr('mtail__enable') |
+    map(attribute='inventory_hostname')
+  }}
+
+_prometheus_targets:
+  node:
+    prod: |-
+      {{
+        _hosts_by_env.prod |
+        intersect(_hosts_nodeexp_enabled) |
+        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('regex_replace', '^([^:]*)$', '\1:9100') |
+        sort | list
+      }}
+    test: |-
+      {{
+        _hosts_by_env.test |
+        intersect(_hosts_nodeexp_enabled) |
+        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('regex_replace', '^([^:]*)$', '\1:9100') |
+        sort | list
+      }}
+    dev: |-
+      {{
+        _hosts_by_env.dev |
+        intersect(_hosts_nodeexp_enabled) |
+        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('regex_replace', '^([^:]*)$', '\1:9100') |
+        sort | list
+      }}
+  mtail:
+    prod: |-
+      {{
+        _hosts_by_env.prod |
+        intersect(_hosts_mtail_enabled) |
+        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('regex_replace', '^([^:]*)$', '\1:3903') |
+        sort | list
+      }}
+    test: |-
+      {{
+        _hosts_by_env.test |
+        intersect(_hosts_mtail_enabled) |
+        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('regex_replace', '^([^:]*)$', '\1:3903') |
+        sort | list
+      }}
+    dev: |-
+      {{
+        _hosts_by_env.dev |
+        intersect(_hosts_mtail_enabled) |
+        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('regex_replace', '^([^:]*)$', '\1:3903') |
+        sort | list
+      }}
+
+# Common metric relabel configurations for mtail.
+_mtail_relabel_configs:
+  apache:
+    - action: replace
+      regex: apache_metrics.mtail;(.*)
+      replacement: ${1}
+      source_labels:
+        - prog
+        - server_port
+      target_label: instance
+
+    - action: replace
+      regex: apache_metrics.mtail;.*
+      replacement: apache
+      source_labels:
+        - prog
+        - server_port
+      target_label: job
+
+    - action: replace
+      regex: apache_metrics.mtail
+      replacement: ''
+      source_labels:
+        - prog
+      target_label: server_port
+
+    - action: replace
+      regex: apache_metrics.mtail
+      replacement: ''
+      source_labels:
+        - prog
+      target_label: prog
+
+  postfix:
+    - action: replace
+      regex: postfix.mtail
+      replacement: postfix
+      source_labels:
+        - prog
+      target_label: job
+
+    - action: replace
+      regex: postfix.mtail;(.*):3903
+      replacement: $1:25
+      source_labels:
+        - prog
+        - instance
+      target_label: instance
+
+    - action: replace
+      regex: postfix.mtail
+      replacement: ''
+      source_labels:
+        - prog
+      target_label: prog
+
+    - action: labeldrop
+      regex: exported_instance

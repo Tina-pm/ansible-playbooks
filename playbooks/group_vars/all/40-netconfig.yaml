@@ -1,0 +1,151 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Simple network configuration templates and defaults.
+# To use these templates:
+#
+# net__enable: true
+# net__use_udev_persistent_rules: true
+# net__interfaces: '{{ netconfig__interfaces }}'
+---
+
+# Defaults.
+
+## Public interface configuration.
+pubnet_iface: ~
+pubnet_hwaddr: ~
+
+### IPv4 configuration.
+pubnet_host: ~
+pubnet_mask: 24
+pubnet_gwidx: 1
+pubnet_gw: |-
+  {{
+    (
+      ('%s/%d' % (pubnet_host, pubnet_mask)) |
+      ansible.utils.ipv4('network/prefix') |
+      ansible.utils.ipv4(pubnet_gwidx) |
+      ansible.utils.ipv4('address')
+    )
+    if pubnet_host and pubnet_mask and pubnet_gwidx else None
+  }}
+pubnet_config_override: ~
+
+### IPv6 configuration.
+pubnet6_host: ~
+pubnet6_mask: 64
+pubnet6_gwidx: 1
+pubnet6_gw: |-
+  {{
+    (
+      ('%s/%d' % (pubnet6_host, pubnet6_mask)) |
+      ansible.utils.ipv6('network/prefix') |
+      ansible.utils.ipv6(pubnet6_gwidx) |
+      ansible.utils.ipv6('address')
+    )
+    if pubnet6_host and pubnet6_mask and pubnet6_gwidx else None
+  }}
+pubnet6_config_override: ~
+
+## Private interface configuration.
+privnet_iface: ~
+privnet_hwaddr: ~
+
+### IPv4 configuration.
+privnet_host: ~
+privnet_mask: 24
+privnet_gwidx: ~
+privnet_gw: |-
+  {{
+    (
+      ('%s/%d' % (privnet_host, privnet_mask)) |
+      ansible.utils.ipv4('network/prefix') |
+      ansible.utils.ipv4(privnet_gwidx) |
+      ansible.utils.ipv4('address')
+    )
+    if privnet_host and privnet_mask and privnet_gwidx else None
+  }}
+privnet_config_override: ~
+
+### IPv6 configuration.
+privnet6_host: ~
+privnet6_mask: 64
+privnet6_gwidx: ~
+privnet6_gw: |-
+  {{
+    (
+      ('%s/%d' % (privnet6_host, privnet6_mask)) |
+      ansible.utils.ipv6('network/prefix') |
+      ansible.utils.ipv6(privnet6_gwidx) |
+      ansible.utils.ipv6('address')
+    )
+    if privnet6_host and privnet6_mask and privnet6_gwidx else None
+  }}
+privnet6_config_override: ~
+
+# Templates.
+
+netconfig__interfaces: |-
+  {{
+    _netconfig__interfaces |
+    combine({
+      pubnet_iface: {'config': {'inet': pubnet_config_override}},
+    } if pubnet_iface and pubnet_config_override else {}, recursive=True) |
+    combine({
+      pubnet_iface: {'config': {'inet6': pubnet6_config_override}},
+    } if pubnet_iface and pubnet6_config_override else {}, recursive=True) |
+    combine({
+      privnet_iface: {'config': {'inet': privnet_config_override}},
+    } if privnet_iface and privnet_config_override else {}, recursive=True) |
+    combine({
+      privnet_iface: {'config': {'inet6': privnet6_config_override}},
+    } if privnet_iface and privnet6_config_override else {}, recursive=True)
+  }}
+
+_netconfig__interfaces: |-
+  {% filter from_yaml %}
+  {% if pubnet_iface %}
+  {{ pubnet_iface }}:
+    allow: auto
+  {% if pubnet_hwaddr %}
+    udev_persistent_rule:
+      address: '{{ pubnet_hwaddr }}'
+  {% endif %}
+    config:
+  {% if pubnet_host %}
+      inet:
+        method: static
+        address: '{{ pubnet_host }}/{{ pubnet_mask }}'
+        gateway: '{{ pubnet_gw if pubnet_gw else None }}'
+  {% endif %}
+
+  {% if pubnet6_host %}
+      inet6:
+        method: static
+        address: '{{ pubnet6_host }}/{{ pubnet6_mask }}'
+        gateway: '{{ pubnet6_gw if pubnet6_gw else None }}'
+  {% endif %}
+  {% endif %}
+
+  {% if privnet_iface %}
+  {{ privnet_iface }}:
+    allow: auto
+  {% if privnet_hwaddr %}
+    udev_persistent_rule:
+      address: '{{ privnet_hwaddr }}'
+  {% endif %}
+    config:
+  {% if privnet_host %}
+      inet:
+        method: static
+        address: '{{ privnet_host }}/{{ privnet_mask }}'
+        gateway: '{{ privnet_gw if privnet_gw else None }}'
+  {% endif %}
+
+  {% if privnet6_host %}
+      inet6:
+        method: static
+        address: '{{ privnet6_host }}/{{ privnet6_mask }}'
+        gateway: '{{ privnet6_gw if privnet6_gw else None }}'
+  {% endif %}
+  {% endif %}
+  {% endfilter %}

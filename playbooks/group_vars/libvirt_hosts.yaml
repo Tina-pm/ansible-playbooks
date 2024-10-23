@@ -1,0 +1,165 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults for libvirt hosts.
+# =============================================================================
+
+# Define routing configuration.
+
+libvirt_hosts__forwarding: false
+libvirt_hosts__masquerade: false
+libvirt_hosts__forwarding_ext_ifaces: []
+libvirt_hosts__forwarding_int_ifaces: []
+
+# Needed for network set-up.
+base_setup__pkg_install__libvirt:
+  - bridge-utils
+
+users__admin_groups__libvirt:
+  - libvirt
+users__create_groups__libvirt:
+  - name: libvirt
+    system: true
+
+apt__packages_to_install__libvirt:
+  - guestfs-tools
+  - libvirt-daemon
+  - prometheus-libvirt-exporter
+  # required by community.libvirt.virt
+  - python3-libvirt
+apt__services_to_enable__libvirt:
+  - prometheus-libvirt-exporter
+apt__services_to_start__libvirt:
+  - prometheus-libvirt-exporter
+
+ferm__services__libvirt:
+  libvirt-exporter:
+    proto: tcp
+    dport: 9177
+    saddr: '{{ node_exporter__allow_from }}'
+
+ferm__custom_configs__libvirt_hosts: |
+  {{
+    {} |
+    combine(
+      dict(forwarding=_libvirt__ferm_custom_forwarding)
+      if libvirt_hosts__forwarding else {}
+    ) |
+    combine (
+      dict(masquerade=_libvirt__ferm_custom_masquerade)
+      if libvirt_hosts__masquerade else {}
+    )
+  }}
+
+_libvirt__ferm_custom_forwarding: |
+  @hook post "sysctl -w net.ipv4.ip_forward=1";
+  @hook post "sysctl -w net.ipv6.conf.all.forwarding=1";
+  @hook post "sysctl -w net.netfilter.nf_conntrack_max=500000";
+
+  @def $DEV_EXT = ({{ ' '.join(libvirt_hosts__forwarding_ext_ifaces) }});
+  @def $DEV_INT = ({{ ' '.join(libvirt_hosts__forwarding_int_ifaces) }});
+
+  domain (ip ip6) {
+    table filter chain FORWARD {
+      interface $DEV_EXT outerface $DEV_EXT ACCEPT;
+      interface $DEV_INT outerface $DEV_INT ACCEPT;
+    }
+  }
+
+_libvirt__ferm_custom_masquerade: |
+  @def $DEV_EXT = ({{ ' '.join(libvirt_hosts__forwarding_ext_ifaces) }});
+  @def $DEV_INT = ({{ ' '.join(libvirt_hosts__forwarding_int_ifaces) }});
+  @def $NET_INT = ({{
+    ' '.join((internal_networks + local_networks) |
+    ansible.utils.cidr_merge |
+    ansible.utils.ipv4
+  )}});
+
+  domain ip {
+    table filter chain FORWARD interface $DEV_INT outerface $DEV_EXT {
+      daddr $NET_INT REJECT;
+      saddr $NET_INT ACCEPT;
+      REJECT;
+    }
+    table nat chain POSTROUTING outerface $DEV_EXT
+      saddr $NET_INT MASQUERADE;
+  }
+
+libvirt_host_qemu_emulators:
+  - x86
+
+libvirt_vm_image_cache_path: /var/lib/libvirt/images
+libvirt_host_pools__common:
+  - name: images
+    path: /var/lib/libvirt/images
+    type: dir
+    mode: 755
+    owner: root
+    group: root
+
+# Discover custom configurations using var prefixes
+# (e.g. libvirt_host_pools__mypools).
+libvirt_host_pools: |-
+  {{
+    query('vars',
+      *(query('varnames', '^libvirt_host_pools__.*') | sort)
+    ) | sum(start=[])
+  }}
+libvirt_host_networks: |-
+  {{
+    query('vars',
+      *(query('varnames', '^libvirt_host_networks__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+# Default pool name, to be overridden.
+libvirt_host_def_pool: '{{ (libvirt_host_pools | first).name }}'
+
+# Pool configuration indexed by name.
+libvirt_host_pools_by_name: |-
+  {{
+    libvirt_host_pools |
+    json_query('[*].{key: name, value: @}') |
+    items2dict
+  }}
+
+# Simplified pool information for guests.
+libvirt_host_pool_paths: |-
+  {{
+    libvirt_host_pools |
+    json_query('[?path].{key: name, value: path}') |
+    items2dict
+  }}
+
+# Overwrite values in the VM definitions.
+libvirt__vms_forced:
+  enable_spice: true
+  enable_guest_virtio: true
+  # Use customised template to allow defining the source network device.
+  xml_file: files/libvirt-vm/vm.xml.j2
+  # Do not start the VMs after definition, so they can be customised first.
+  start: false
+
+# Ansible hosts running in this host.
+# Uses an JMESPath expression to find the hosts whose `vm_host` variable points
+# to this host.
+libvirt__local_guests: |-
+  {{
+    hostvars |
+    dict2items |
+    json_query(_libvirt__my_guests_q) |
+    sort
+  }}
+
+_libvirt__my_guests_q: >-
+  [?value.vm_host == '{{ inventory_hostname }}' && value.libvirt__vm_def].key
+
+# Compile VM definitions for hosts in `libvirt__define_guests`, which defaults
+# to `libvirt__local_guests`.
+libvirt__define_guests: '{{ libvirt__local_guests }}'
+libvirt_vms: |-
+  {{
+    libvirt__define_guests |
+    map('extract', hostvars, 'libvirt__vm_def') |
+    map('combine', libvirt__vms_forced)
+  }}

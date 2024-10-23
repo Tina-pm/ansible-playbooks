@@ -1,0 +1,161 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults for all hosts.
+# =============================================================================
+
+# Default domain name to construct URLs.
+domain_name: ~
+# Default domain name to append to inventory hosts.
+inventory_domain_name: '{{ domain_name }}'
+
+# Canonical hostname and FQDN.
+host_name: '{{ inventory_hostname_short }}'
+host_fqdn: '{{ inventory_hostname_short }}.{{ inventory_domain_name }}'
+
+# General network parameters.
+nameservers:
+  - 8.8.8.8
+
+local_networks: []
+internal_networks: []
+link_local_networks:
+  - 169.254/16
+  - 'fe80::/10'
+
+# Host environments.
+envs:
+  - prod
+  - test
+  - dev
+env: |-
+  {{
+    (
+      (group_names | intersect(envs)) or [None]
+    ) | first
+  }}
+
+# Playbook: bootstrap*
+# -----------------------------------------------------------------------------
+
+# Essential packages before ansible can run.
+bootstrap__install_packages__common:
+  - python3
+  - python3-apt
+
+# Role: net
+# -----------------------------------------------------------------------------
+
+net__enable: false
+
+# Role: ntp
+# -----------------------------------------------------------------------------
+
+ntp_enabled: true
+ntp_timezone: UTC
+
+ntp_manage_config: true
+ntp_driftfile: /var/lib/ntp/ntp.drift
+
+# Role: ferm
+# -----------------------------------------------------------------------------
+
+ferm__enable: false
+
+# Role: fail2ban
+# -----------------------------------------------------------------------------
+
+fail2ban__enable: true
+fail2ban__install_ferm_svc: '{{ ferm__enable | bool }}'
+
+# Role: simple-bind
+# -----------------------------------------------------------------------------
+
+simple_bind__enable: false
+simple_bind__install_ferm_svc: '{{ ferm__enable | bool }}'
+
+# Role: resolv
+# -----------------------------------------------------------------------------
+
+resolv__enable: false
+resolv_nameservers: |-
+  {{
+    (['127.0.0.1'] if simple_bind__enable else []) + nameservers
+  }}
+resolv_domain: '{{ domain_name | d(omit) }}'
+
+# Role: apache2
+# -----------------------------------------------------------------------------
+
+apache2__enable: false
+apache2__install_ferm_svc: '{{ ferm__enable | bool }}'
+apache2__listen_http__base:
+  - 80
+apache2__listen_https__base:
+  - 443
+apache2__mods__base:
+  rewrite:
+    state: enabled
+  ssl:
+    state: enabled
+apache2__sites__base:
+  000-default:
+    state: enabled
+    src: |
+      <VirtualHost *:80>
+        ServerAdmin webmaster@{{ domain_name }}
+        DocumentRoot /var/www/html
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        RewriteEngine On
+        RewriteRule ^/.well-known/acme-challenge/.* - [L]
+        RewriteCond %{HTTPS} off
+        RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+      </VirtualHost>
+apache2__logdirs__base:
+  - /var/log/apache2
+
+# Role: prometheus-node-exporter
+# -----------------------------------------------------------------------------
+
+node_exporter__enable: true
+node_exporter__install_ferm_svc: '{{ ferm__enable | bool }}'
+node_exporter__allow_from: '{{ internal_networks }}'
+node_exporter__listen_addr: ''
+node_exporter__listen_port: 9100
+node_exporter__disk_ignored_devs:
+node_exporter__fs_ignored_mounts:
+  ^/(dev|proc|run|sys|mnt|media|var/lib/docker/.+)($|/)
+node_exporter__net_ignored_devs: ^lo$
+node_exporter__enabled_collectors:
+node_exporter__extra_args: |
+  {% if node_exporter__version is defined and
+      node_exporter__version is version('1.0.0', 'ge') %}
+  --collector.cpu.info
+  {% endif %}
+
+# Role: prometheus_blackbox_exporter
+# -----------------------------------------------------------------------------
+
+blackbox_exporter__enable: false
+blackbox_exporter__allow_from: '{{ internal_networks }}'
+blackbox_exporter__install_ferm_svc: '{{ ferm__enable | bool }}'
+
+# Role: mtail
+# -----------------------------------------------------------------------------
+
+mtail__enable: false
+mtail__install_ferm_svc: '{{ ferm__enable | bool }}'
+
+# Role: glauth
+# -----------------------------------------------------------------------------
+
+glauth__enable: false
+
+# Role: tinc
+# -----------------------------------------------------------------------------
+
+tinc__netname: tinc
+tinc__install_ferm_svc: '{{ ferm__enable | bool }}'

@@ -1,0 +1,47 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults for base-setup role.
+# =============================================================================
+
+base_setup__set_hostname: '{{ host_fqdn }}'
+base_setup__disable_cloud_init: true
+base_setup__disable_resolved: true
+
+base_setup__pkg_install__base:
+  - acl  # Needed for becoming a non-root user.
+  - bash-completion
+  - bind9-host
+  - cron
+  - cron-apt
+  - info
+  - kitty-terminfo
+  - less
+  - logrotate
+  - lsof
+  - mailutils
+  - man
+  - manpages
+  - mlocate
+  - moreutils
+  - ncurses-term
+  - netcat-openbsd
+  - rsync
+  - rsyslog
+  - screen
+  - socat
+  - strace
+  - tcpdump
+  - tmux
+  - vim
+
+# Also add base packages to apt role's list.
+apt__packages_to_install__base_setup: '{{ base_setup__pkg_install }}'
+
+base_setup__setup_locales: true
+base_setup__default_locale: en_IE.UTF-8
+base_setup__locales_to_be_generated:
+  - en_IE.UTF-8 UTF-8
+  - en_US.UTF-8 UTF-8
+  - es_AR.UTF-8 UTF-8
+  - es_ES.UTF-8 UTF-8

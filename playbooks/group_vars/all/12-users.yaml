@@ -1,0 +1,48 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults for users role.
+# =============================================================================
+
+users__root_mail_forward: support@{{ domain_name }}
+users__home_dir_templates: home_templates/
+
+# Common pre-defined users.
+
+users__remove_users:
+  - admin
+  - debian
+users__remove_groups:
+  - admin
+  - debian
+
+# Global user directory to simplify user creation.
+# users__local_defs:
+#   user:
+#     name: user
+#     gecos: Us Er
+users__local_defs: {}
+
+# Simple creation of users using the global directory, and prefixed variables.
+users__create_from_def__base: []
+users__admins_from_def__base: []
+users__admin_groups__base: [adm, sudo]
+
+users__create_users__simple: |-
+  {{
+    (
+      users__admins_from_def |
+      map('extract', users__local_defs) |
+      map(
+        'combine',
+        dict(groups=users__admin_groups),
+        recursive=True,
+        list_merge='append_rp',
+      )
+    ) +
+    (
+      users__create_from_def |
+      difference(users__admins_from_def) |
+      map('extract', users__local_defs)
+    )
+  }}

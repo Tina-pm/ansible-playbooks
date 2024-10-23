@@ -1,0 +1,42 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults for Docker servers.
+# =============================================================================
+
+apt__packages_to_install__docker:
+  - docker-compose
+  - docker.io
+apt__services_to_enable__docker:
+  - docker
+apt__services_to_start__docker:
+  - docker
+
+# Add admin users to `docker` group to allow running commands without root.
+users__admin_groups__docker:
+  - docker
+users__create_groups__docker:
+  - name: docker
+    system: true
+
+# Simple rules to allow containers to access the internet and communicate
+# between them.
+#
+# XXX: This requires manually disabling iptables management in Docker:
+# $ cat > /etc/docker/daemon.json <<END
+# { "iptables": false }
+# END
+ferm__custom_configs__docker:
+  docker: |
+    @hook post "sysctl -w net.ipv4.ip_forward=1";
+
+    domain ip table filter {
+      chain FORWARD {
+        saddr 172.16.0.0/12 ACCEPT;
+      }
+    }
+    domain ip table nat {
+      chain POSTROUTING {
+        saddr 172.16.0.0/12 daddr ! 172.16.0.0/12 MASQUERADE;
+      }
+    }

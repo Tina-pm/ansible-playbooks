@@ -1,0 +1,78 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults for libvirt guests.
+# =============================================================================
+
+# Shortcut to access host's configuration values.
+vm_hostvars: '{{ hostvars[vm_host] }}'
+
+# Connection values.
+ansible_connection: community.libvirt.libvirt_qemu
+ansible_libvirt_uri: qemu+ssh://{{ vm_hostvars.ansible_host }}/system
+ansible_host: '{{ vm_name }}'
+
+bootstrap__install_packages__libvirt:
+  - ifupdown
+  # Needed for ansible/libvirt connection.
+  - qemu-guest-agent
+
+# VM definition parameters.
+vm_name: '{{ inventory_hostname }}'
+vm_default_params:
+  memory_mb: 1024
+  vcpus: 1
+  autostart: true
+vm_params: {}
+
+# Discover custom configurations using var prefixes
+# (e.g. vm_volume__root).
+vm_volumes: |-
+  {{ query('vars', *(query('varnames', '^vm_volume__.*') | select | sort)) }}
+vm_interfaces: |-
+  {{ query('vars', *(query('varnames', '^vm_interface__.*') | select | sort)) }}
+
+vm_image_variant: genericcloud
+# Uses variables computed by 25-apt-calculated.yaml.
+vm_image_url:
+  http://cloud.debian.org/images/cloud/{{ apt__distro_name }}/latest/debian-{{
+    apt__distro_ver }}-{{ vm_image_variant }}-amd64.qcow2
+
+# Convenience variables.
+vm_host_pool_paths: '{{ vm_hostvars.libvirt_host_pool_paths }}'
+vm_host_def_pool: '{{ vm_hostvars.libvirt_host_def_pool }}'
+
+vm_volume__00_root:
+  dev: /dev/vg0/vm-{{ inventory_hostname }}-root
+  target: vda
+  type: block
+  size: 10G
+  format: raw
+  mount: ~  # Partitioned device.
+
+vm_interface__00_pubbr:
+  type: bridge
+  mac: '{{ pubnet_hwaddr }}'
+  source:
+    dev: vmbr0
+  target:
+    dev: vm-{{ vm_name }}-en0
+vm_interface__01_privbr:
+  type: bridge
+  mac: '{{ privnet_hwaddr }}'
+  source:
+    dev: vmbr1
+  target:
+    dev: vm-{{ vm_name }}-en1
+
+# Construct complete VM definition.
+libvirt__vm_def: |-
+  {{
+    vm_default_params |
+    combine(vm_params or {}) |
+    combine({
+      'name': vm_name,
+      'volumes': vm_volumes,
+      'interfaces': vm_interfaces,
+    })
+  }}

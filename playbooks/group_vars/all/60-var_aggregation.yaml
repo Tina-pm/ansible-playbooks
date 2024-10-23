@@ -1,0 +1,245 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Agregation of custom configuration using var prefixes
+# =============================================================================
+
+# Playbook: bootstrap*
+# -----------------------------------------------------------------------------
+
+bootstrap__install_packages: |-
+  {{
+    query('vars',
+      *(query('varnames', '^bootstrap__install_packages__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+# Role: apache2
+# -----------------------------------------------------------------------------
+
+apache2__listen_http: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apache2__listen_http__.*') | sort)
+    ) | sum(start=[])
+  }}
+apache2__listen_https: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apache2__listen_https__.*') | sort)
+    ) | sum(start=[])
+  }}
+apache2__mods: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apache2__mods__.*') | sort)
+      )
+    )
+  }}
+apache2__conf: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apache2__conf__.*') | sort)
+      )
+    )
+  }}
+apache2__sites: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apache2__sites__.*') | sort)
+      )
+    )
+  }}
+apache2__logdirs: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apache2__logdirs__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+# Role: apt
+# -----------------------------------------------------------------------------
+
+apt__custom_sources: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apt__custom_sources__.*') | sort)
+      )
+    )
+  }}
+apt__trusted_keys: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apt__trusted_keys__.*') | sort)
+      )
+    )
+  }}
+apt__custom_preferences: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apt__custom_preferences__.*') | sort)
+      )
+    )
+  }}
+apt__packages_to_install: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apt__packages_to_install__.*') | sort)
+    ) | sum(start=[])
+  }}
+apt__services_to_enable: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apt__services_to_enable__.*') | sort)
+    ) | sum(start=[])
+  }}
+apt__services_to_start: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apt__services_to_start__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+# Role: base-setup
+# -----------------------------------------------------------------------------
+
+base_setup__pkg_install: |-
+  {{
+    query('vars',
+      *(query('varnames', '^base_setup__pkg_install__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+# Role: users
+# -----------------------------------------------------------------------------
+
+users__create_users: |-
+  {{
+    query('vars',
+      *(query('varnames', '^users__create_users__.*') | sort)
+    ) | sum(start=[])
+  }}
+users__create_groups: |-
+  {{
+    query('vars',
+      *(query('varnames', '^users__create_groups__.*') | sort)
+    ) | sum(start=[])
+  }}
+users__create_from_def: |-
+  {{
+    query('vars',
+      *(query('varnames', '^users__create_from_def__.*') | sort)
+    ) | sum(start=[])
+  }}
+users__admins_from_def: |-
+  {{
+    query('vars',
+      *(query('varnames', '^users__admins_from_def__.*') | sort)
+    ) | sum(start=[])
+  }}
+users__admin_groups: |-
+  {{
+    query('vars',
+      *(query('varnames', '^users__admin_groups__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+# Role: ferm
+# -----------------------------------------------------------------------------
+
+ferm__services: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^ferm__services__.*') | sort)
+      )
+    )
+  }}
+ferm__custom_configs: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^ferm__custom_configs__.*') | sort)
+      )
+    )
+  }}
+
+# Role: net
+# -----------------------------------------------------------------------------
+
+net__interfaces: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^net__interfaces__.*') | sort)
+      )
+    )
+  }}
+
+# Role: prometheus
+# -----------------------------------------------------------------------------
+
+prometheus__alertmanagers: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__alertmanagers__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+prometheus__monitored_nodes: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__monitored_nodes__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+prometheus__scrape_configs: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__scrape_configs__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+prometheus__rules: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__rules__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+prometheus__monitored_prometheus: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__monitored_prometheus__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+prometheus__federated_prometheus: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__federated_prometheus__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+# Role: glauth
+# -----------------------------------------------------------------------------
+
+glauth__config_datastore_users: |-
+  {{
+    query('vars',
+      *(query('varnames', '^glauth__config_datastore_users__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+glauth__config_datastore_groups: |-
+  {{
+    query('vars',
+      *(query('varnames', '^glauth__config_datastore_groups__.*') | sort)
+    ) | sum(start=[])
+  }}

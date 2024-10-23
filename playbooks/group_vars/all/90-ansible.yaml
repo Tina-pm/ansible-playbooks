@@ -1,0 +1,13 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Ansible configuration.
+# =============================================================================
+
+# Override interpreter location according to Debian default configurations.
+ansible_python_interpreter: |-
+  {{
+    '/usr/bin/python'
+    if apt__distro in ('buster', 'stretch', 'oldstable') else
+    '/usr/bin/python3'
+  }}

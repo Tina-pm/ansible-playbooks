@@ -1,0 +1,30 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for APT role.
+# =============================================================================
+
+apt__distro: bookworm
+
+# Add private APT repositories.
+apt__local_source_enable: false
+apt__local_source_mirror: https://debian.{{ domain_name }}/
+apt__local_source_components: [main]
+apt__local_source_distros:
+  - '{{ apt__distro }}'
+  - unstable
+  - experimental
+
+apt__custom_sources__local: |-
+  {% filter from_yaml %}
+  {% for distro in apt__local_source_distros +%}
+    local-{{ distro }}:
+    {% if apt__local_source_enable %}
+        mirror: {{ apt__local_source_mirror }}
+        distro: {{ distro }}
+        components: {{ apt__local_source_components }}
+        options:
+          trusted: 'yes'
+    {% endif %}
+  {% endfor %}
+  {% endfilter %}
