@@ -26,6 +26,7 @@ base_setup__pkg_install__base:
   - moreutils
   - ncurses-term
   - netcat-openbsd
+  - ripgrep
   - rsync
   - rsyslog
   - screen
