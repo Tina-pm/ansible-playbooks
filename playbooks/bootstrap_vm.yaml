@@ -1,0 +1,176 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Create VM, install needed packages for bootstrap, and call
+# `_boostrap-common` playbook.
+#
+# Note: Volume creation, formatting, and mounting is not yet implemented.
+---
+- name: Validate play parameters
+  hosts: all
+  gather_facts: false
+  vars:
+    _vm_hosts: |-
+      {{
+        ansible_play_hosts_all |
+        intersect(groups['libvirt_guests']) |
+        map('extract', hostvars, 'vm_host') |
+        unique
+      }}
+    _missing_hosts: |-
+      {{ _vm_hosts | difference(ansible_play_hosts_all) }}
+  tasks:
+    - name: Check VM hosts are included in execution
+      ansible.builtin.assert:
+        that:
+          - not _missing_hosts
+        quiet: true
+        fail_msg: |-
+          The VM hosts should be included in the play: {{ _missing_hosts }}.
+      run_once: true
+
+    - name: Create transient VM hosts group
+      ansible.builtin.add_host:
+        name: '{{ item }}'
+        group: vm_hosts
+        # Save playbook targets, not limited by play `hosts` param.
+        _limit_hosts: '{{ ansible_play_hosts_all }}'
+      loop: '{{ _vm_hosts }}'
+      check_mode: false
+      changed_when: false
+
+- name: Prepare host
+  hosts: vm_hosts
+  tasks:
+    - name: Configure VM host, storage pools, and networks
+      ansible.builtin.include_role:
+        name: tina_pm.third_party.libvirt_host
+      vars:
+        libvirt_host_extra_client_packages: |-
+          {{ apt__packages_to_install__libvirt }}
+
+    - name: Detect already defined VMs
+      community.libvirt.virt:
+        command: list_vms
+      register: _defined_vms
+      check_mode: false
+      changed_when: false
+
+    # XXX(Tina): WiP to automate volume creation and initialisation.
+    - name: Retrieve facts about already defined pools and volumes
+      community.libvirt.virt_pool:
+        command: facts
+      check_mode: false
+      changed_when: false
+
+    - name: Store list of already defined pools and volumes
+      ansible.builtin.set_fact:
+        _defined_pool_vols: |-
+          {% with %}
+          {% set _facts = ansible_libvirt_pools | dict2items |
+            subelements('value.volumes')
+          %}
+          {{
+            _facts | map(attribute='0.key') | zip(_facts | map(attribute='1'))
+          }}
+          {% endwith %}
+
+- name: Create and set-up VMs in host
+  hosts: vm_hosts
+  vars:
+    _all_guests: |-
+      {{ libvirt__local_guests | intersect(_limit_hosts) }}
+    _new_guests: |-
+      {{ _all_guests | difference(_defined_vms.list_vms) }}
+  tasks:
+    - name: Define guest domains and volumes
+      ansible.builtin.include_role:
+        name: tina_pm.third_party.libvirt_vm
+      vars:
+        libvirt__define_guests: '{{ _new_guests }}'
+
+    - name: Adjust guest domain XML definition to use `block` devices
+      # There is a bug in libvirt's AppArmor support that prevents QEMU from
+      # accesing the disk devices when they are referenced using pool+name
+      # instead of device. https://gitlab.com/libvirt/libvirt/-/issues/135
+      ansible.builtin.shell:  # noqa: risky-shell-pipe
+        cmd: >-
+          {% with %}
+          {% set dom = item.0.name %}
+          {% set pool = item.1.pool %}
+          {% set vol = item.1.name %}
+          {% set dev = '$(virsh vol-path %s %s)' % (vol, pool) %}
+          {% set opts = (
+              None if ansible_check_mode else '--define',
+              '--print-diff' if ansible_diff_mode else None,
+            ) | select | join(' ') %}
+          virt-xml {{ opts }}
+          --edit source.pool={{ pool }},source.volume={{ vol }}
+          --disk type=block,source.pool=,source.volume=,source.dev={{ dev }}
+          {{ dom }}
+          {% endwith %}
+      loop: |-
+        {{
+          _all_guests |
+          map('extract', libvirt__guest_defs) |
+          subelements('volumes', {'skip_missing': True}) |
+          selectattr('1.type', 'equalto', 'volume')
+        }}
+      register: _editxml
+      check_mode: false
+      changed_when: '"No XML diff was generated" not in _editxml.stderr'
+
+    - name: Ensure new guest domains are not running
+      community.libvirt.virt:
+        name: '{{ item }}'
+        state: shutdown
+      loop: '{{ _new_guests }}'
+
+    # TODO(Tina): Implement volume formatting and mounting.
+
+    - name: Install packages needed for bootstrapping
+      ansible.builtin.command:
+        cmd: |
+          virt-customize -d {{ item }} --install {{
+            ','.join(hostvars[item].bootstrap__install_packages)
+          }}
+      loop: '{{ _new_guests }}'
+      changed_when: true
+
+    - name: Start VM domains
+      community.libvirt.virt:
+        state: running
+        name: '{{ item }}'
+      loop: '{{ _all_guests }}'
+
+- name: Adjust VM partitions and filesystems
+  hosts: libvirt_guests
+  gather_facts: false
+  tasks:
+    - name: Wait for system to become reachable
+      ansible.builtin.wait_for_connection:
+        timeout: 300
+
+    - name: Verify if root partition needs to be extended
+      ansible.builtin.command:
+        cmd: growpart --dry-run /dev/vda 1
+      check_mode: false
+      register: growpart
+      changed_when: false
+      failed_when: growpart.rc not in (0, 1)
+
+    - name: Extend root partition to available space
+      ansible.builtin.command:
+        cmd: growpart --update on /dev/vda 1
+      changed_when: true
+      when: growpart.rc == 0
+
+    - name: Resize root filesystem to available space
+      ansible.builtin.command:
+        cmd: resize2fs /dev/vda1
+      changed_when: true
+      when: growpart.rc == 0
+
+- name: Run common bootstrapping roles
+  ansible.builtin.import_playbook: _bootstrap-common.yaml
+  vars:
+    target_hosts: libvirt_guests
