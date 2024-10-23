@@ -1,0 +1,36 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Common bootstrapping roles.
+#
+# * Users role: Set up user accounts and home directories.
+# * Base-setup role: Set up hostname, mail forwarding, apt repositories, sshd,
+#   and sudo. Disable `cloud-init` if present to prevent it from overwriting
+#   configurations.
+# * Net role: Configure network interfaces.
+---
+- name: Run bootstrapping roles
+  hosts: '{{ target_hosts | d("all") }}'
+  vars:
+    play_net_enable: '{{ net__enable | d(false) }}'
+    play_resolv_enable: '{{ resolv__enable | d(false) }}'
+    simple_bind__enable: false  # Do not expect a local name server yet.
+  roles:
+    - role: tina_pm.common.net
+      when: play_net_enable
+      tags: net
+
+    - role: tina_pm.third_party.resolv
+      when: play_resolv_enable
+      tags: resolv
+
+    - role: tina_pm.common.base_setup
+      tags: base_setup
+      vars:
+        # Do not disable this until users are fully set-up.
+        base_setup__sshd_password_auth_allowed:
+        base_setup__sshd_root_login_allowed:
+
+    - role: tina_pm.common.users
+      tags: users
+      vars:
+        users__force_update_password: true
