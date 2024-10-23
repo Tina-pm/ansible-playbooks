@@ -1,0 +1,51 @@
+- name: Install packages
+  hosts: all
+  gather_facts: false
+  vars:
+    interpreter_pkgs:
+      - python3
+      - python3-apt
+    bootstrap_packages: '{{ bootstrap__install_packages | d([]) }}'
+    # Allow connecting to a new host for the first time.
+    ansible_host_key_checking: false
+  pre_tasks:
+    - name: Install interpreter and required modules
+      ansible.builtin.raw: |
+        apt update -q=2
+        env LC_ALL=C apt install -q=1 --no-install-recommends -y {{ pkgs }}
+      vars:
+        pkgs: '{{ interpreter_pkgs | join(" ") }}'
+      register: apt
+      changed_when: '"0 upgraded, 0 newly installed" not in apt.stdout'
+  tasks:
+    - name: Install packages needed for bootstrap
+      ansible.builtin.apt:
+        name: '{{ bootstrap_packages }}'
+        state: present
+
+- name: Run bootstrapping roles
+  hosts: all
+  vars:
+    play_net_enable: '{{ net__enable | d(false) }}'
+    play_resolv_enable: '{{ resolv__enable | d(false) }}'
+    simple_bind__enable: false  # Do not expect a local name server yet.
+  roles:
+    - role: net
+      when: play_net_enable
+      tags: net
+
+    - role: tina_pm.third_party.resolv
+      when: play_resolv_enable
+      tags: resolv
+
+    - role: base_setup
+      tags: base_setup
+      vars:
+        # Do not disable this until users are fully set-up.
+        base_setup__sshd_password_auth_allowed:
+        base_setup__sshd_root_login_allowed:
+
+    - role: users
+      tags: users
+      vars:
+        users__force_update_password: true

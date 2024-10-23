@@ -1,0 +1,13 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Run the equivalent of `apt dist-upgrade --autoremove --purge`. Will
+# also configure /etc/apt according to role settings.
+---
+- name: Upgrade packages
+  hosts: all
+  roles:
+    - role: apt
+      vars:
+        apt__run_upgrade: true
+        apt__run_autoremove: true
+        apt__purge_removed: true
