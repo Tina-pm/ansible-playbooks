@@ -32,7 +32,7 @@ re-defining host variables in multiple contexts.
 
 Sample `ansible.cfg` snippet:
 
-```
+```dosini
 # Change the *group* variable precedence rules so that inventory file group
 # variables override inventory-context group_vars, and those override
 # playbook-context group_vars.
