@@ -5,7 +5,7 @@
 # =============================================================================
 
 users__root_mail_forward: support@{{ domain_name }}
-users__home_dir_templates: home_templates/
+users__home_dir_templates: '{{ inventory_dir }}/home_templates/'
 
 # Common pre-defined users.
 
