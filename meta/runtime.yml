@@ -1,0 +1,2 @@
+---
+requires_ansible: '>=2.14.16'  # Debian 12 (bookworm).

@@ -1,0 +1,21 @@
+namespace: tina_pm
+name: playbooks
+version: 1.0.0
+
+authors:
+  - Martina Ferrari <tina@tina.pm>
+  - Adeodato Simó <dato@net.com.org.es>
+
+description: Ansible collection for Tina-pm playbooks and customisations
+tags:
+  - infrastructure
+
+readme: README.md
+license:
+  - GPL-2.0-or-later
+
+repository: https://github.com/Tina-pm/ansible-playbooks.git
+
+# dependencies:
+#  tina_pm.common: '>=2.0.0'
+#  tina_pm.third_party: '>=1.0.0'

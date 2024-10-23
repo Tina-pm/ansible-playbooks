@@ -1,0 +1,7 @@
+collections:  # noqa: syntax-check[specific]
+  - name: tina_pm.common
+    source: https://github.com/Tina-pm/ansible-roles.git
+    type: git
+  - name: tina_pm.third_party
+    source: https://github.com/Tina-pm/tina_pm.third_party.git
+    type: git
