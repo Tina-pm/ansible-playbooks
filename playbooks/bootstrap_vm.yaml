@@ -44,9 +44,6 @@
     - name: Configure VM host, storage pools, and networks
       ansible.builtin.include_role:
         name: tina_pm.third_party.libvirt_host
-      vars:
-        libvirt_host_extra_client_packages: |-
-          {{ apt__packages_to_install__libvirt }}
 
     - name: Detect already defined VMs
       community.libvirt.virt:
