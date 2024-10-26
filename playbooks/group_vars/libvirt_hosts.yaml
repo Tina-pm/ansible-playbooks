@@ -33,6 +33,10 @@ apt__services_to_enable__libvirt:
 apt__services_to_start__libvirt:
   - prometheus-libvirt-exporter
 
+# Pass the same packages to the libvirt-host role.
+libvirt_host_extra_client_packages: |-
+  {{ apt__packages_to_install__libvirt }}
+
 ferm__services__libvirt:
   libvirt-exporter:
     proto: tcp
