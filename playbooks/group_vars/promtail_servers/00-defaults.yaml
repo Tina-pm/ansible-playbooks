@@ -1,0 +1,15 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+apt__packages_to_install__promtail:
+  - promtail
+apt__services_to_enable__promtail:
+  - promtail
+apt__services_to_start__promtail:
+  - promtail
+
+ferm__services__promtail:
+  promtail:
+    dport: 9080
+    proto: tcp
+    saddr: '{{ internal_networks }}'
