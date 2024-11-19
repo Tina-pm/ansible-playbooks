@@ -1,0 +1,9 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+apt__packages_to_install__grafana:
+  - grafana
+apt__services_to_enable__grafana:
+  - grafana-server
+apt__services_to_start__grafana:
+  - grafana-server
