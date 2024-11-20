@@ -59,3 +59,27 @@
         owner: root
         group: root
         mode: '0644'
+
+    - name: Create repos
+      ansible.builtin.command:
+        argv:
+          - aptly
+          - repo
+          - create
+          - -distribution={{ item }}
+          - -component=main
+          - '{{ item }}'
+        creates: '{{ aptly__repo_path }}/pool'
+      loop: '{{ aptly__repo_dists }}'
+
+    - name: Publish repos
+      ansible.builtin.command:
+        argv:
+          - aptly
+          - publish
+          - repo
+          - -architectures=source,amd64
+          - '{{ item }}'
+          - 'filesystem:{{ aptly__repo_prefix}}:'
+        creates: '{{ aptly__repo_www_path }}/pool'
+      loop: '{{ aptly__repo_dists }}'
