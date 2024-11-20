@@ -1,0 +1,61 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Clone sysadmin repository for configuration reuse.
+---
+- name: Install and configure aptly
+  hosts: aptly_servers
+  become: true
+  vars:
+    aptly__repo_path: /srv/debian
+    aptly__repo_www_path: /srv/www/aptly/html/
+    aptly__repo_owner: root
+    aptly__repo_group: debrepo
+  tasks:
+    - name: Install needed packages
+      ansible.builtin.package:
+        name:
+          - aptly
+        state: present
+
+    - name: Create Debian repo directories
+      ansible.builtin.file:
+        state: directory
+        dest: '{{ item }}'
+        owner: '{{ aptly__repo_owner }}'
+        group: '{{ aptly__repo_group }}'
+        mode: u=rwX,g=rwX,o=rX
+      loop:
+        - '{{ aptly__repo_path }}'
+        - '{{ aptly__repo_www_path }}'
+
+    - name: Set extended permissions
+      ansible.posix.acl:
+        state: present
+        path: '{{ item }}'
+        default: false
+        etype: group
+        entity: '{{ aptly__repo_group }}'
+        permissions: rwX
+      loop:
+        - '{{ aptly__repo_path }}'
+        - '{{ aptly__repo_www_path }}'
+
+    - name: Set default extended permissions
+      ansible.posix.acl:
+        state: present
+        path: '{{ item }}'
+        default: true
+        etype: group
+        entity: '{{ aptly__repo_group }}'
+        permissions: rwX
+      loop:
+        - '{{ aptly__repo_path }}'
+        - '{{ aptly__repo_www_path }}'
+
+    - name: Configure aptly
+      ansible.builtin.template:
+        src: files/aptly/aptly.conf.j2
+        dest: /etc/aptly.conf
+        owner: root
+        group: root
+        mode: '0644'

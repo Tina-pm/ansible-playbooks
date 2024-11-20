@@ -1,0 +1,8 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+aptly__repo_dists:
+  - bullseye
+  - bookworm
+  - unstable
+aptly__repo_prefix: assekuransa.com
