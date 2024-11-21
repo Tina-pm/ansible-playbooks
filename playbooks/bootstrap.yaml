@@ -6,6 +6,7 @@
 - name: Install packages
   hosts: all
   gather_facts: false
+  strategy: linear
   vars:
     interpreter_pkgs:
       - python3
