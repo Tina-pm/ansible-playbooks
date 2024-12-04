@@ -1,0 +1,9 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Set up host base configuration.
+---
+- name: Set up host base configuration
+  hosts: all
+  roles:
+    - role: tina_pm.common.base_setup
+      tags: base_setup
