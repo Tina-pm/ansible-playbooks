@@ -1,0 +1,34 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+grafana_ldap__servers__host: "{{ (glauth__service_ldap.listen.split(':')[0]
+                                  if glauth__service_ldap.listen is defined else None) }}"
+grafana_ldap__servers__port: "{{ (glauth__service_ldap.listen.split(':')[1]
+                                  if glauth__service_ldap.listen is defined else None) }}"
+grafana_ldap__servers__use_ssl: "{{ (glauth__service_ldap.tls | lower
+                                    if glauth__service_ldap.tls is defined else None) }}"
+grafana_ldap__servers__start_tls: "{{ (glauth__service_ldap.tls | lower
+                                      if glauth__service_ldap.tls is defined else None) }}"
+grafana_ldap__servers__ssl_skip_verify: 'false'
+grafana_ldap__servers__bind_dn: "cn=grafana,
+                                  dc={{ host_fqdn.split('.')[-3] }},
+                                  dc={{ host_fqdn.split('.')[-2] }},
+                                  dc={{ host_fqdn.split('.')[-1] }}"
+# FIXME: hacer coincidir el pwd con el hash bcryp en glauth
+grafana_ldap__servers__password: 'eiw3CueL'
+grafana_ldap__servers__search_filter: "(cn=%s)"
+grafana_ldap__servers__base_dns: "[\"ou=people,
+                                    dc={{ host_fqdn.split('.')[-3] }},
+                                    dc={{ host_fqdn.split('.')[-2] }},
+                                    dc={{ host_fqdn.split('.')[-1] }}\"]"
+grafana_ldap__servers_atributes__name: "givenName"
+grafana_ldap__servers_atributes__surname: "sn"
+grafana_ldap__servers_atributes__username: "cn"
+grafana_ldap__servers_atributes__member_of: "memberOf"
+grafana_ldap__servers_atributes__email: "mail"
+grafana_ldap__servers_group_mappings_1__group_dn: "cn=admins,ou=groups,dc=grafana,dc=org"
+grafana_ldap__servers_group_mappings_1__org_role: "Admin"
+grafana_ldap__servers_group_Mappings_2__group_dn: "cn=users,ou=groups,dc=grafana,dc=org"
+grafana_ldap__servers_group_Mappings_2__org_role: "Editor"
+grafana_ldap__servers_group_Mappings_3__group_dn: "*"
+grafana_ldap__servers_group_Mappings_3__org_role: "Viewer"

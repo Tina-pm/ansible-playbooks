@@ -1,0 +1,10 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Automatic IP blocking with `fail2ban`.
+---
+- name: Automatic IP blocking with `fail2ban`
+  hosts: all
+  roles:
+    - role: tina_pm.common.fail2ban
+      when: ferm__enable and fail2ban__enable
+      tags: [ferm, fail2ban]

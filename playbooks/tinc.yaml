@@ -1,0 +1,9 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Install and configure VPN.
+---
+- name: Install and configure VPN
+  hosts: tinc_servers
+  roles:
+    - role: tina_pm.third_party.tinc
+      tags: tinc

@@ -1,0 +1,37 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+- name: Set up user accounts and home directories
+  import_playbook: ./users.yaml
+
+- name: Set up hostname, mail forwarding, apt repositories, sshd, and sudo. Disable `cloud-init` if present to prevent it from overwriting
+  import_playbook: ./base_setup.yaml
+
+- name: Install and configure VPN
+  import_playbook: ./tinc.yaml
+
+- name: APT distribution, sources, PGP keys, and preferences
+  import_playbook: ./apt_upgrade.yaml
+
+- name: NTP time synchronisation
+  import_playbook: ./ntp.yaml
+
+- name: Per-host firewall with `iptables` and `ferm`
+  import_playbook: ./ferm.yaml
+
+- name: Automatic IP blocking with `fail2ban`
+  import_playbook: ./fail2ban.yaml
+
+- name: Simple DNS server with `bind`
+  import_playbook: ./simple_bind.yaml
+
+- name: DNS resolution configuration
+  import_playbook: ./resolv.yaml
+
+- name: Setup apache2 server and configurations
+  import_playbook: ./apache2.yaml
+
+- name: Prometheus server, `node_exporter`, `mtail` and `blackbox exporter`
+  import_playbook: ./monitoring.yaml
+
+- name: LDAP server
+  import_playbook: ./glauth.yaml
