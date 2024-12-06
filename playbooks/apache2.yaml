@@ -1,0 +1,10 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Setup apache2 server and configurations.
+---
+- name: Setup apache2 server and configurations
+  hosts: all
+  roles:
+    - role: tina_pm.common.apache2
+      when: apache2__enable
+      tags: apache2

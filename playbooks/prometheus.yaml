@@ -1,7 +1,0 @@
-# vim:ts=2:sw=2:et:ai:sts=2
----
-- name: Install and configure prometheus
-  hosts: prometheus_servers
-  roles:
-    - role: tina_pm.common.prometheus
-      tags: prometheus
