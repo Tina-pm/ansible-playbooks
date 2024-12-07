@@ -1,0 +1,16 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Defaults for Dropbear initramfs playbook.
+# =============================================================================
+
+dropbear_initramfs__authorized_keys_file:
+  /etc/dropbear/initramfs/authorized_keys
+
+dropbear_initramfs__authorized_keys: |-
+  {{
+    users__admins_from_def |
+    map("extract", users__local_defs, "authorized") |
+    select("defined") |
+    sum(start=[])
+  }}
