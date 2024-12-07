@@ -1,0 +1,37 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Set up and configure grafana.
+#
+#   - If a local ldap server is available,
+#     it will be configured as default auth method.
+---
+- name: Set up and configure grafana
+  hosts: grafana_servers
+  become: true
+  tasks:
+
+  - name: Change config if ldap server is available
+    set_fact:
+      grafana__auth_basic__enabled: false
+      grafana__auth_ldap__enabled: true
+    when: glauth__service_ldap.enabled | default(None) is not none
+    tags: [ grafana, grafana_ldap ]
+
+  - name: Configure grafana
+    ansible.builtin.template:
+      src: files/grafana/grafana.ini.j2
+      dest: /etc/grafana/grafana.ini
+      owner: root
+      group: grafana
+      mode: '0640'
+      tags: [ grafana ]
+
+  - name: Configure ldap server if available
+    ansible.builtin.template:
+      src: files/grafana/ldap.toml.j2
+      dest: /etc/grafana/ldap.toml
+      owner: root
+      group: grafana
+      mode: '0640'
+      when: glauth__service_ldap.enabled | default(None) is not none
+      tags: [ grafana, grafana_ldap ]
