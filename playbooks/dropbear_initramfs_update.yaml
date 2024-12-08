@@ -1,0 +1,30 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Update dropbear initramfs authorized key.
+---
+- name: Update dropbear initramfs authorized keys
+  hosts: libvirt_hosts
+  become: true
+  vars:
+    authorized_keys_file: '/etc/dropbear/initramfs/authorized_keys'
+
+  tasks:
+    - name: Update the list of authorized keys
+      ansible.posix.authorized_key:
+        user: root
+        state: present
+        key: "{{ dropbear_initramfs__authorized_keys
+                  if dropbear_initramfs__authorized_keys is string else
+                  '\n'.join(dropbear_initramfs__authorized_keys)
+                  }}"
+        path: "{{ authorized_keys_file }}"
+        manage_dir: false
+        exclusive: true
+      register: update_authorized_keys
+      notify: Update initramfs
+
+  handlers:
+    - name: Update initramfs
+      ansible.builtin.command:
+        cmd: /usr/sbin/update-initramfs -u
+      changed_when: update_authorized_keys.changed == true
