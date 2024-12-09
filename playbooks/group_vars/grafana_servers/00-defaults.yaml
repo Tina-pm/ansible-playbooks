@@ -7,3 +7,24 @@ apt__services_to_enable__grafana:
   - grafana-server
 apt__services_to_start__grafana:
   - grafana-server
+
+grafana__server__http_port: 3000
+grafana__server__domain: 'monitoring.{{ domain_name }}'
+grafana__server__root_url: 'https://%(domain)s/'
+grafana__analytics__reporting_enable: 'false'
+grafana__users__alow_sign_up: 'false'
+grafana__auth_anonymous__enabled: 'false'
+grafana__auth_basic__enabled: 'true'
+grafana__auth_ldap__enabled: 'false'
+grafana__smtp__enabled: 'true'
+grafana__smtp__host: 'localhost:25'
+grafana__smtp__from_address: 'grafana@{{ host_fqdn }}'
+grafana__emails__welcome_email_on_sign_up: 'true'
+grafana__plugins__enable_alpha: 'true'
+grafana__plugins__allow_unsigned: 'goshposh-metaqueries-datasource'
+
+ferm__services__grafana:
+  grafana:
+    dport: '{{ grafana__server__http_port }}'
+    proto: tcp
+    saddr: '{{ internal_networks }}'
