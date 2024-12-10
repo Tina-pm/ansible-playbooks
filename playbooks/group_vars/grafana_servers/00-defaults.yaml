@@ -1,4 +1,6 @@
 # vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Install and configure grafana
 ---
 
 apt__packages_to_install__grafana:
@@ -7,3 +9,29 @@ apt__services_to_enable__grafana:
   - grafana-server
 apt__services_to_start__grafana:
   - grafana-server
+
+grafana__server__http_port: 3000
+grafana__server__domain: 'monitoring.{{ domain_name }}'
+grafana__server__root_url: 'https://%(domain)s/'
+grafana__analytics__reporting_enable: 'false'
+grafana__users__allow_sign_up: 'false'
+grafana__auth_anonymous__enabled: 'false'
+grafana__auth_basic__enabled: '{{ not (glauth__service_ldap.enabled | d()) }}'
+grafana__auth_ldap__enabled: '{{ glauth__service_ldap.enabled | d() | bool }}'
+grafana__smtp__enabled: 'true'
+grafana__smtp__host: 'localhost:25'
+# The email address from which the server will send messages (the domain is the hostname).
+grafana__smtp__from_address: 'grafana@{{ host_fqdn }}'
+# Send a welcome email with a link to the first authorization step.
+grafana__emails__welcome_email_on_sign_up: 'true'
+# Allow the use of experimental plugins.
+grafana__plugins__enable_alpha: 'true'
+# Meta Queries plugin is built as a data source plugin and can be used in conjunction
+# with other data source to show computed metrics like Moving Average, Time Shift.
+grafana__plugins__allow_unsigned: 'goshposh-metaqueries-datasource'
+
+ferm__services__grafana:
+  grafana:
+    dport: '{{ grafana__server__http_port }}'
+    proto: tcp
+    saddr: '{{ internal_networks }}'
