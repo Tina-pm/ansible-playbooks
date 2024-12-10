@@ -1,0 +1,32 @@
+---
+- name: Manage Bind9 configurations
+  hosts: bind_servers
+  become: true
+
+  tasks:
+    - name: Synchronize Bind9 configurations
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /etc/bind/
+        owner: root
+        group: bind
+        mode: '0644'
+        force: true
+      loop: '{{ lookup("ansible.builtin.fileglob", bind_config__conf_files, wantlist=True) }}'
+      loop_control:
+        label: "{{ item | basename }}"
+      notify:
+        - Validate Bind9 configuration
+        - Reload Bind9
+
+  handlers:
+    - name: Validate Bind9 configuration
+      ansible.builtin.command:
+        cmd: named-checkconf
+        chdir: /etc/bind
+      changed_when: false
+
+    - name: Reload Bind9
+      ansible.builtin.service:
+        name: bind9
+        state: reloaded
