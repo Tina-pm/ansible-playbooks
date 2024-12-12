@@ -35,7 +35,7 @@
         owner: root
         group: grafana
         mode: '0640'
-      when: glauth__service_ldap.enabled | default()
+      when: glauth__service_ldap.enabled | d(False)
       notify: _tina_restart_grafana
 
     - name: Start and enable service

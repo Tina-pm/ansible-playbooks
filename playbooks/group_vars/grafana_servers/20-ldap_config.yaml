@@ -20,8 +20,8 @@ _grafana_ldap_listen: |-
 grafana_ldap__servers__host: '{{ _grafana_ldap_listen.split(":")[0] }}'
 grafana_ldap__servers__port: '{{ _grafana_ldap_listen.split(":")[1] }}'
 grafana_ldap__servers__use_ssl: '{{ _grafana_ldap_use_ldaps }}'
-grafana_ldap__servers__start_tls: |-
-  {{ not _grafana_ldap_use_ldaps or _grafana_ldap_svc.get('tls') }}
+grafana_ldap__servers__start_tls: '{{
+  not _grafana_ldap_use_ldaps or _grafana_ldap_svc.get("tls") }}'
 grafana_ldap__servers__ssl_skip_verify: false
 grafana_ldap__servers__bind_dn:
 

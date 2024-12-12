@@ -16,8 +16,8 @@ grafana__server__root_url: https://%(domain)s/
 grafana__analytics__reporting_enabled: false
 grafana__users__allow_sign_up: false
 grafana__auth_anonymous__enabled: false
-grafana__auth_basic__enabled: '{{ not _grafana_use_ldap }}'
 grafana__auth_ldap__enabled: '{{ _grafana_use_ldap }}'
+grafana__auth_basic__enabled: '{{ not _grafana_use_ldap }}'
 grafana__smtp__enabled: true
 grafana__smtp__host: localhost:25
 # The email address from which the server will send messages (the domain
