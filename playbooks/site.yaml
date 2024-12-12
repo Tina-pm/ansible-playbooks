@@ -3,7 +3,7 @@
 - name: Set up user accounts and home directories
   import_playbook: ./users.yaml
 
-- name: Set up hostname, mail forwarding, apt repositories, sshd, and sudo. Disable `cloud-init` if present to prevent it from overwriting
+- name: Set up host base configuration
   import_playbook: ./base_setup.yaml
 
 - name: Install and configure VPN
