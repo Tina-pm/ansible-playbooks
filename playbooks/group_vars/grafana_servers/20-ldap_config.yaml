@@ -23,10 +23,8 @@ grafana_ldap__servers__use_ssl: "{{ _grafana_ldap_use_ldaps }}"
 grafana_ldap__servers__start_tls: |-
   {{ not _grafana_ldap_use_ldaps or _grafana_ldap_svc.get('tls') }}
 grafana_ldap__servers__ssl_skip_verify: 'false'
-grafana_ldap__servers__bind_dn: "cn=grafana,
-                                  dc={{ host_fqdn.split('.')[-3] }},
-                                  dc={{ host_fqdn.split('.')[-2] }},
-                                  dc={{ host_fqdn.split('.')[-1] }}"
+grafana_ldap__servers__bind_dn:
+
 grafana_ldap__servers__password:
 grafana_ldap__servers__search_filter:
 grafana_ldap__servers__base_dns:

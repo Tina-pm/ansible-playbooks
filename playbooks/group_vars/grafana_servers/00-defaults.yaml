@@ -13,11 +13,11 @@ apt__services_to_start__grafana:
 grafana__server__http_port: 3000
 grafana__server__domain: 'monitoring.{{ domain_name }}'
 grafana__server__root_url: 'https://%(domain)s/'
-grafana__analytics__reporting_enable: 'false'
+grafana__analytics__reporting_enabled: 'false'
 grafana__users__allow_sign_up: 'false'
 grafana__auth_anonymous__enabled: 'false'
-grafana__auth_basic__enabled: '{{ not (glauth__service_ldap.enabled | d()) }}'
-grafana__auth_ldap__enabled: '{{ glauth__service_ldap.enabled | d() | bool }}'
+grafana__auth_basic__enabled: '{{ not _grafana_use_ldap }}'
+grafana__auth_ldap__enabled: '{{ _grafana_use_ldap }}'
 grafana__smtp__enabled: 'true'
 grafana__smtp__host: 'localhost:25'
 # The email address from which the server will send messages (the domain is the hostname).

@@ -6,7 +6,7 @@ domain = {{ grafana__server__domain }}
 root_url = {{ grafana__server__root_url }}
 
 [analytics]
-reporting_enabled = {{ grafana__analytics__reporting_enable }}
+reporting_enabled = {{ grafana__analytics__reporting_enabled }}
 
 [users]
 allow_sign_up = {{ grafana__users__allow_sign_up }}
@@ -15,10 +15,10 @@ allow_sign_up = {{ grafana__users__allow_sign_up }}
 enabled = {{ grafana__auth_anonymous__enabled }}
 
 [auth.basic]
-enabled = {{ grafana__auth_basic__enabled | lower }}
+enabled = {{ grafana__auth_basic__enabled }}
 
 [auth.ldap]
-enabled = {{ grafana__auth_ldap__enabled | lower }}
+enabled = {{ grafana__auth_ldap__enabled }}
 
 [smtp]
 enabled = {{ grafana__smtp__enabled }}
