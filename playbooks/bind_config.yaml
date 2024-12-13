@@ -12,6 +12,7 @@
         group: bind
         mode: '0644'
         force: true
+      # yamllint disable-line rule:line-length
       loop: '{{ lookup("ansible.builtin.fileglob", bind_config__conf_files, wantlist=True) }}'
       loop_control:
         label: '{{ item | basename }}'
