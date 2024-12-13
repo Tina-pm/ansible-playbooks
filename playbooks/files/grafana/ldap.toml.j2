@@ -1,26 +1,31 @@
 # {{ ansible_managed }}
 
-[[servers]]
-host = "{{ grafana__ldap__servers__host }}"
-port = {{ grafana__ldap__servers__port }}
-use_ssl = {{ grafana__ldap__servers__use_ssl }}
-start_tls = {{ grafana__ldap__servers__start_tls }}
-ssl_skip_verify = {{ grafana__ldap__servers__ssl_skip_verify }}
-
-bind_dn = "{{ grafana__ldap__servers__bind_dn }}"
-bind_password = '{{ grafana__ldap__servers__password }}'
-
-search_filter = "{{ grafana__ldap__servers__search_filter }}"
-search_base_dns = {{ grafana__ldap__servers__base_dns }}
-
-[servers.attributes]
-name = "{{ grafana__ldap__servers_atributes__name }}"
-surname = "{{ grafana__ldap__servers_atributes__surname }}"
-username = "{{ grafana__ldap__servers_atributes__username }}"
-member_of = "{{ grafana__ldap__servers_atributes__member_of }}"
-email = "{{ grafana__ldap__servers_atributes__email }}"
-
 {{
-  dict(servers=dict(group_mappings=grafana__ldap__servers_group_mappings)) |
-  tina_pm.common.to_toml
+  {
+    'servers': [
+      {
+        'host': grafana_ldap__servers__host,
+        'port': grafana_ldap__servers__port,
+        'use_ssl': grafana_ldap__servers__use_ssl,
+        'start_tls': grafana_ldap__servers__start_tls,
+        'ssl_skip_verify': grafana_ldap__servers__ssl_skip_verify,
+
+        'bind_dn': grafana_ldap__servers__bind_dn,
+        'bind_password': grafana_ldap__servers__password,
+
+        'search_filter': grafana_ldap__servers__search_filter,
+        'search_base_dns': grafana_ldap__servers__base_dns,
+
+        'attributes': {
+          'name': grafana_ldap__servers_atributes__name,
+          'surname': grafana_ldap__servers_atributes__surname,
+          'username': grafana_ldap__servers_atributes__username,
+          'member_of': grafana_ldap__servers_atributes__member_of,
+          'email': grafana_ldap__servers_atributes__email,
+        },
+
+        'group_mappings': grafana_ldap__servers_group_mappings,
+      }
+    ],
+  } | tina_pm.common.to_toml
 }}
