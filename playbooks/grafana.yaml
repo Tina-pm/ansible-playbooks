@@ -26,7 +26,7 @@
         owner: root
         group: grafana
         mode: '0640'
-      notify: Restart grafana
+      notify: _tina_restart_grafana
 
     - name: Configure ldap server if available
       ansible.builtin.template:
@@ -36,7 +36,7 @@
         group: grafana
         mode: '0640'
       when: glauth__service_ldap.enabled | default()
-      notify: Restart grafana
+      notify: _tina_restart_grafana
 
     - name: Start and enable service
       ansible.builtin.service:
@@ -45,7 +45,7 @@
         enabled: true
 
   handlers:
-    - name: Restart grafana
+    - name: _tina_restart_grafana
       ansible.builtin.service:
         name: grafana-server
         state: restarted
