@@ -1,0 +1,25 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+extends: default
+rules:
+  comments:
+    min-spaces-from-content: 1  # Required by ansible-lint
+  comments-indentation: false  # Required by ansible-lint
+  document-start: disable
+  line-length:
+    max: 80
+  braces:
+    min-spaces-inside: 0  # Required by ansible-lint
+    max-spaces-inside: 1  # Required by ansible-lint
+  octal-values:
+    forbid-implicit-octal: true  # Required by ansible-lint
+    forbid-explicit-octal: true  # Required by ansible-lint
+  quoted-strings:
+    quote-type: single
+    required: only-when-needed
+    extra-required:
+      - ^[0-9:]+$  # IPv6 addresses containing only numbers 0-9 are misparsed
+    extra-allowed:
+      - ^\^   # regular expression
+      - .{72,}  # Allow using quotes to escape newlines in long strings
+      - ^[0-9a-fA-F:]+(/[0-9]+)?$  # Other IPv6 addresses

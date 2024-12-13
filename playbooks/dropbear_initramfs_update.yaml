@@ -11,8 +11,11 @@
       ansible.posix.authorized_key:
         user: root
         state: present
+        # Important: double quotes scalar is needed here so that '\n'.join()
+        # uses actual newlines, and not literal r'\n'.
+        # yamllint disable-line rule:quoted-strings
         key: "{{ '\n'.join(dropbear_initramfs__authorized_keys) }}"
-        path: "{{ dropbear_initramfs__authorized_keys_file }}"
+        path: '{{ dropbear_initramfs__authorized_keys_file }}'
         manage_dir: false
         exclusive: true
       notify: Update initramfs
