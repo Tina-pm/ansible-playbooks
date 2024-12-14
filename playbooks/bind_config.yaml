@@ -2,6 +2,9 @@
 - name: Manage Bind9 configurations
   hosts: bind_servers
   become: true
+  gather_facts: false
+  vars:
+    _bind_conf_files: '{{ bind_config__conf_files | d("files/bind/*") }}'
 
   tasks:
     - name: Synchronize Bind9 configurations
@@ -13,7 +16,7 @@
         mode: '0644'
         force: true
       with_fileglob:
-        - '{{ bind_config__conf_files }}'
+        - '{{ _bind_conf_files }}'
       loop_control:
         label: '{{ item | basename }}'
       notify:
