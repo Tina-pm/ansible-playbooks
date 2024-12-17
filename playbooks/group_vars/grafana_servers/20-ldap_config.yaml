@@ -17,23 +17,23 @@ _grafana_ldap_listen: |-
     ).get('listen') |
     mandatory(msg='Missing listen parameter in GLAuth configuration')
   }}
-grafana_ldap__servers__host: '{{ _grafana_ldap_listen.split(":")[0] }}'
-grafana_ldap__servers__port: '{{ _grafana_ldap_listen.split(":")[1] }}'
-grafana_ldap__servers__use_ssl: '{{ _grafana_ldap_use_ldaps }}'
-grafana_ldap__servers__start_tls: '{{
+grafana__ldap__servers__host: '{{ _grafana_ldap_listen.split(":")[0] }}'
+grafana__ldap__servers__port: '{{ _grafana_ldap_listen.split(":")[1] }}'
+grafana__ldap__servers__use_ssl: '{{ _grafana_ldap_use_ldaps }}'
+grafana__ldap__servers__start_tls: '{{
   not _grafana_ldap_use_ldaps or _grafana_ldap_svc.get("tls") }}'
-grafana_ldap__servers__ssl_skip_verify: false
-grafana_ldap__servers__bind_dn:
+grafana__ldap__servers__ssl_skip_verify: false
+grafana__ldap__servers__bind_dn:
 
-grafana_ldap__servers__password:
-grafana_ldap__servers__search_filter:
-grafana_ldap__servers__base_dns:
-grafana_ldap__servers_atributes__name: givenName
-grafana_ldap__servers_atributes__surname: sn
-grafana_ldap__servers_atributes__username: cn
-grafana_ldap__servers_atributes__member_of: memberOf
-grafana_ldap__servers_atributes__email: mail
-grafana_ldap__servers_group_mappings:
+grafana__ldap__servers__password:
+grafana__ldap__servers__search_filter:
+grafana__ldap__servers__base_dns:
+grafana__ldap__servers_atributes__name: givenName
+grafana__ldap__servers_atributes__surname: sn
+grafana__ldap__servers_atributes__username: cn
+grafana__ldap__servers_atributes__member_of: memberOf
+grafana__ldap__servers_atributes__email: mail
+grafana__ldap__servers_group_mappings:
   - group_dn: cn=admins,ou=groups,dc=grafana,dc=org
     org_role: Admin
   - group_dn: cn=users,ou=groups,dc=grafana,dc=org
