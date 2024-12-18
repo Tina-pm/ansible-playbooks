@@ -1,0 +1,79 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults for apache2 role.
+# =============================================================================
+
+apache2__enable: false
+apache2__use_md: false
+apache2__install_ferm_svc: '{{ ferm__enable | bool }}'
+apache2__listen_http__base:
+  - 80
+apache2__listen_https__base:
+  - 443
+
+# TODO: move dehydrated__cert_path to a proper location
+dehydrated__cert_path: /var/lib/dehydrated/certs
+
+_a2_md_state: '{{ "enabled" if apache2__use_md else "absent" }}'
+_a2_cert_path: '{{ "%s/%s" % (dehydrated__cert_path, host_fqdn) }}'
+_a2_sslsite_state: |-
+  {{
+    'enabled' if apache2__use_md or 'acme_clients' in group_names else 'absent'
+  }}
+
+apache2__mods__base:
+  md:
+    state: '{{ _a2_md_state }}'
+  rewrite:
+    state: enabled
+  ssl:
+    state: enabled
+
+apache2__conf__base:
+  md:
+    state: '{{ _a2_md_state }}'
+    src: |
+      MDCertificateAgreement accepted
+
+apache2__sites__base:
+  000-default:
+    state: enabled
+    src: |
+      <VirtualHost *:80>
+        ServerAdmin webmaster@{{ domain_name }}
+        DocumentRoot /var/www/html
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        RewriteEngine On
+        RewriteRule ^/.well-known/acme-challenge/.* - [L]
+        RewriteCond %{HTTPS} off
+        RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+      </VirtualHost>
+  001-default-ssl:
+    state: '{{ _a2_sslsite_state }}'
+    src: |
+      {% if apache2__use_md %}
+      MDomain {{ host_fqdn }}
+      {% endif %}
+
+      <VirtualHost *:443>
+        ServerName {{ host_fqdn }}
+        ServerAdmin webmaster@{{ domain_name }}
+        DocumentRoot /var/www/html
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        SSLEngine On
+      {% if not apache2__use_md %}
+        SSLCertificateFile      {{ _a2_cert_path }}/cert.pem
+        SSLCertificateKeyFile   {{ _a2_cert_path }}/privkey.pem
+        SSLCertificateChainFile {{ _a2_cert_path }}/chain.pem
+      {% endif %}
+      </VirtualHost>
+
+apache2__logdirs__base:
+  - /var/log/apache2
