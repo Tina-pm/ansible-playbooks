@@ -1,0 +1,35 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults for apache2 role.
+# =============================================================================
+
+apache2__enable: false
+apache2__install_ferm_svc: '{{ ferm__enable | bool }}'
+apache2__listen_http__base:
+  - 80
+apache2__listen_https__base:
+  - 443
+apache2__mods__base:
+  rewrite:
+    state: enabled
+  ssl:
+    state: enabled
+apache2__sites__base:
+  000-default:
+    state: enabled
+    src: |
+      <VirtualHost *:80>
+        ServerAdmin webmaster@{{ domain_name }}
+        DocumentRoot /var/www/html
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        RewriteEngine On
+        RewriteRule ^/.well-known/acme-challenge/.* - [L]
+        RewriteCond %{HTTPS} off
+        RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+      </VirtualHost>
+apache2__logdirs__base:
+  - /var/log/apache2
