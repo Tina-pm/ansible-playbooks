@@ -18,4 +18,4 @@ ferm__services__bind:
     dport: domain
     proto: [udp, tcp]
 
-bind_config__conf_files: '{{ inventory_dir }}/../../bind/*'
+bind_config__conf_files: '{{ inventory_dir }}/../files/bind/*'
