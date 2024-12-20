@@ -1,0 +1,42 @@
+# Playbook: Set up backups.
+---
+- name: Set up backups
+  hosts: libvirt_hosts
+  become: true
+  tasks:
+    - name: Install needed packages
+      ansible.builtin.package:
+        name: restic
+        state: present
+
+    - name: Set up backup script
+      ansible.builtin.copy:
+        src: files/backup/backup.sh
+        dest: /usr/local/sbin/backup.sh
+        owner: root
+        group: root
+        mode: '0700'
+
+    - name: Save restic password
+      ansible.builtin.copy:
+        content: '{{ backup__restic_password }}'
+        dest: /usr/local/etc/restic_password
+        owner: root
+        group: root
+        mode: '0600'
+      no_log: true
+      when: backup__restic_password is defined
+
+    - name: Set up cron job
+      ansible.builtin.cron:
+        name: Create daily backup
+        minute: '{{ backup__cron__minute | default(0) }}'
+        hour: '{{ backup__cron__hour | default(4) }}'
+        job: >
+          RESTIC_PASSWORD_FILE=/usr/local/etc/restic_password
+          RESTIC_REPOSITORY={{ backup__restic_repository }}
+          /usr/local/sbin/backup.sh
+        user: root
+      when:
+        - backup__restic_repository is defined
+        - backup__restic_password is defined
