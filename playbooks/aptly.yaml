@@ -61,3 +61,37 @@
         owner: root
         group: root
         mode: '0644'
+
+    - name: Find existing repos
+      ansible.builtin.command:
+        argv:
+          - aptly
+          - repo
+          - list
+          - -raw
+      register: _aptly_repos
+      check_mode: false
+      changed_when: false
+
+    - name: Create repos
+      ansible.builtin.command:
+        argv:
+          - aptly
+          - repo
+          - create
+          - -distribution={{ item }}
+          - -component=main
+          - '{{ item }}'
+      loop: '{{ aptly__repo_dists | difference(_aptly_repos.stdout_lines) }}'
+
+    - name: Publish repos
+      ansible.builtin.command:
+        argv:
+          - aptly
+          - publish
+          - repo
+          - -architectures=source,amd64
+          - '{{ item }}'
+          - 'filesystem:{{ aptly__fspub_endpoint_name }}:'
+        creates: '{{ aptly__fspub_endpoint_path }}/dists/{{ item }}/Release'
+      loop: '{{ aptly__repo_dists }}'
