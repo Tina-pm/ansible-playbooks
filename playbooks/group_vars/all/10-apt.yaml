@@ -19,12 +19,12 @@ apt__custom_sources__local: |-
   {% filter from_yaml %}
   {% for distro in apt__local_source_distros +%}
     local-{{ distro }}:
-    {% if apt__local_source_enable %}
+  {% if apt__local_source_enable %}
         mirror: {{ apt__local_source_mirror }}
         distro: {{ distro }}
         components: {{ apt__local_source_components }}
         options:
           trusted: 'yes'
-    {% endif %}
+  {% endif %}
   {% endfor %}
   {% endfilter %}
