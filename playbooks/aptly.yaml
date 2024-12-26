@@ -6,7 +6,7 @@
   hosts: aptly_servers
   become: true
   vars:
-    aptly__repo_path: /srv/debian
+    aptly__root_dir: /srv/debian
     aptly__repo_www_path: /srv/www/aptly/html/
     aptly__repo_owner: root
     aptly__repo_group: debrepo
@@ -25,7 +25,7 @@
         group: '{{ aptly__repo_group }}'
         mode: u=rwX,g=rwX,o=rX
       loop:
-        - '{{ aptly__repo_path }}'
+        - '{{ aptly__root_dir }}'
         - '{{ aptly__repo_www_path }}'
 
     - name: Set extended permissions
@@ -37,7 +37,7 @@
         entity: '{{ aptly__repo_group }}'
         permissions: rwX
       loop:
-        - '{{ aptly__repo_path }}'
+        - '{{ aptly__root_dir }}'
         - '{{ aptly__repo_www_path }}'
 
     - name: Set default extended permissions
@@ -49,7 +49,7 @@
         entity: '{{ aptly__repo_group }}'
         permissions: rwX
       loop:
-        - '{{ aptly__repo_path }}'
+        - '{{ aptly__root_dir }}'
         - '{{ aptly__repo_www_path }}'
 
     - name: Configure aptly
