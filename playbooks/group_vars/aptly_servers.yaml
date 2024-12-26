@@ -5,4 +5,4 @@ aptly__repo_dists:
   - bullseye
   - bookworm
   - unstable
-aptly__repo_prefix: assekuransa.com
+aptly__fspub_endpoint_name: tina.pm
