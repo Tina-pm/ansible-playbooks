@@ -14,6 +14,11 @@
           - aptly
         state: present
 
+    - name: Create repo group
+      ansible.builtin.group:
+        name: '{{ aptly__repo_group }}'
+        system: true
+
     - name: Create Debian repo directories
       ansible.builtin.file:
         state: directory
