@@ -84,7 +84,11 @@
           - -distribution={{ item }}
           - -component=main
           - '{{ item }}'
-      loop: '{{ aptly__repo_dists | difference(_aptly_repos.stdout_lines) }}'
+      loop: '{{ _missing_repos }}'
+      vars:
+        _missing_repos: '{{
+          aptly__repo_dists | difference(_aptly_repos.stdout_lines) }}'
+      changed_when: item in _missing_repos
 
     - name: Publish repos
       ansible.builtin.command:
