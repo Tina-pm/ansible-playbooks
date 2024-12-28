@@ -11,7 +11,9 @@
     - name: Install needed packages
       ansible.builtin.package:
         name:
+          - acl
           - aptly
+          - dctrl-tools
         state: present
 
     - name: Create repo group
