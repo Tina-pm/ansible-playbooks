@@ -9,6 +9,5 @@ aptly__repo_dists:
   - unstable
 
 # TODO(dato): make `aptly__fspub_endpoints` into a map or list.
-# FIXME(dato): we should probably have no default for the endpoint name?
-aptly__fspub_endpoint_name: tina.pm
+aptly__fspub_endpoint_name: filesystem
 aptly__fspub_endpoint_path: /srv/www/aptly/html/
