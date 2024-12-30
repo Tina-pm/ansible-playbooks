@@ -12,8 +12,6 @@ apache2__listen_http__base:
 apache2__listen_https__base:
   - 443
 
-# TODO: move dehydrated__cert_path to a proper location
-dehydrated__cert_path: /var/lib/dehydrated/certs
 
 _a2_md_state: '{{ "enabled" if apache2__use_md else "absent" }}'
 _a2_cert_path: '{{ "%s/%s" % (dehydrated__cert_path, host_fqdn) }}'
