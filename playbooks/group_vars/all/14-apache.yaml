@@ -14,19 +14,28 @@ apache2__logdirs__base:
 # Configurable settings for these templates.
 # -----------------------------------------------------------------------------
 
+# Enable the `SSL` module.
+apache2__use_ssl: '{{ apache2__use_md or dehydrated__enable }}'
 # Enable the `MD` module for automatic SSL certificate creation.
 apache2__use_md: false
 
+# Enable and configure the default SSL site.
+apache2__default_ssl_enable: '{{ apache2__use_ssl }}'
+# Use `MD` for the default SSL site.
+apache2__default_ssl_uses_md: '{{ apache2__use_md }}'
 # Certificate directory for the default SSL site (when not using `MD`).
 apache2__default_ssl_cert_path: |-
   {{ '%s/%s' % (dehydrated__cert_path, host_fqdn) }}
+# Force HTTPS redirects in the default site.
+apache2__default_site_force_ssl: '{{ apache2__default_ssl_enable }}'
 
 # Generated templates
 # -----------------------------------------------------------------------------
 
 apache2__mods__base:
   rewrite:
-    state: enabled
+    state: |-
+      {{ 'enabled' if apache2__default_site_force_ssl else 'absent' }}
 
 apache2__sites__base:
   000-default:
@@ -39,25 +48,30 @@ apache2__sites__base:
         ErrorLog ${APACHE_LOG_DIR}/error.log
         CustomLog ${APACHE_LOG_DIR}/access.log combined
 
+      {% if apache2__default_site_force_ssl %}
         RewriteEngine On
+      {% if dehydrated__enable %}
         RewriteRule ^/.well-known/acme-challenge/.* - [L]
+      {% endif %}
         RewriteCond %{HTTPS} off
         RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
+      {% endif %}
       </VirtualHost>
 
-apache2__listen_https__ssl: [443]
+apache2__listen_https__ssl: '{{ [443] if apache2__use_ssl else [] }}'
 
 apache2__mods__ssl:
   md:
-    state:  |-
-      {{ 'enabled' if apache2__use_md else 'absent' }}
+    state: |-
+      {{ 'enabled' if apache2__use_ssl and apache2__use_md else 'absent' }}
   ssl:
-    state: enabled
+    state: |-
+      {{ 'enabled' if apache2__use_ssl else 'absent' }}
 
 apache2__conf__ssl:
   md:
-    state:  |-
-      {{ 'enabled' if apache2__use_md else 'absent' }}
+    state: |-
+      {{ 'enabled' if apache2__use_ssl and apache2__use_md else 'absent' }}
     src: |
       MDCertificateAgreement accepted
 
@@ -65,10 +79,11 @@ apache2__sites__ssl:
   001-default-ssl:
     state: |-
       {{
-        'enabled' if apache2__use_md or dehydrated__enable else 'absent'
+        'enabled' if apache2__use_ssl and apache2__default_ssl_enable else
+        'absent'
       }}
     src: |
-      {% if apache2__use_md %}
+      {% if apache2__default_ssl_uses_md %}
       MDomain {{ host_fqdn }}
       {% endif %}
 
@@ -81,7 +96,7 @@ apache2__sites__ssl:
         CustomLog ${APACHE_LOG_DIR}/access.log combined
 
         SSLEngine On
-      {% if not apache2__use_md %}
+      {% if not apache2__default_ssl_uses_md %}
         SSLCertificateFile      {{ apache2__default_ssl_cert_path }}/cert.pem
         SSLCertificateKeyFile   {{ apache2__default_ssl_cert_path }}/privkey.pem
         SSLCertificateChainFile {{ apache2__default_ssl_cert_path }}/chain.pem
