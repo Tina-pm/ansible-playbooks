@@ -5,34 +5,28 @@
 # =============================================================================
 
 apache2__enable: false
-apache2__use_md: false
 apache2__install_ferm_svc: '{{ ferm__enable | bool }}'
-apache2__listen_http__base:
-  - 80
-apache2__listen_https__base:
-  - 443
+apache2__listen_http__base: [80]
+apache2__listen_https__base: []
+apache2__logdirs__base:
+  - /var/log/apache2
 
+# Configurable settings for these templates.
+# -----------------------------------------------------------------------------
 
-_a2_md_state: '{{ "enabled" if apache2__use_md else "absent" }}'
-_a2_cert_path: '{{ "%s/%s" % (dehydrated__cert_path, host_fqdn) }}'
-_a2_sslsite_state: |-
-  {{
-    'enabled' if apache2__use_md or 'acme_clients' in group_names else 'absent'
-  }}
+# Enable the `MD` module for automatic SSL certificate creation.
+apache2__use_md: false
+
+# Certificate directory for the default SSL site (when not using `MD`).
+apache2__default_ssl_cert_path: |-
+  {{ '%s/%s' % (dehydrated__cert_path, host_fqdn) }}
+
+# Generated templates
+# -----------------------------------------------------------------------------
 
 apache2__mods__base:
-  md:
-    state: '{{ _a2_md_state }}'
   rewrite:
     state: enabled
-  ssl:
-    state: enabled
-
-apache2__conf__base:
-  md:
-    state: '{{ _a2_md_state }}'
-    src: |
-      MDCertificateAgreement accepted
 
 apache2__sites__base:
   000-default:
@@ -50,8 +44,29 @@ apache2__sites__base:
         RewriteCond %{HTTPS} off
         RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
       </VirtualHost>
+
+apache2__listen_https__ssl: [443]
+
+apache2__mods__ssl:
+  md:
+    state:  |-
+      {{ 'enabled' if apache2__use_md else 'absent' }}
+  ssl:
+    state: enabled
+
+apache2__conf__ssl:
+  md:
+    state:  |-
+      {{ 'enabled' if apache2__use_md else 'absent' }}
+    src: |
+      MDCertificateAgreement accepted
+
+apache2__sites__ssl:
   001-default-ssl:
-    state: '{{ _a2_sslsite_state }}'
+    state: |-
+      {{
+        'enabled' if apache2__use_md or dehydrated__enable else 'absent'
+      }}
     src: |
       {% if apache2__use_md %}
       MDomain {{ host_fqdn }}
@@ -67,11 +82,8 @@ apache2__sites__base:
 
         SSLEngine On
       {% if not apache2__use_md %}
-        SSLCertificateFile      {{ _a2_cert_path }}/cert.pem
-        SSLCertificateKeyFile   {{ _a2_cert_path }}/privkey.pem
-        SSLCertificateChainFile {{ _a2_cert_path }}/chain.pem
+        SSLCertificateFile      {{ apache2__default_ssl_cert_path }}/cert.pem
+        SSLCertificateKeyFile   {{ apache2__default_ssl_cert_path }}/privkey.pem
+        SSLCertificateChainFile {{ apache2__default_ssl_cert_path }}/chain.pem
       {% endif %}
       </VirtualHost>
-
-apache2__logdirs__base:
-  - /var/log/apache2
