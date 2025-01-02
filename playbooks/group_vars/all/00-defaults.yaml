@@ -68,7 +68,7 @@ ferm__enable: false
 fail2ban__enable: true
 fail2ban__install_ferm_svc: '{{ ferm__enable | bool }}'
 
-# Role: simple-bind
+# Role: simple_bind
 # -----------------------------------------------------------------------------
 
 simple_bind__enable: false
@@ -84,7 +84,7 @@ resolv_nameservers: |-
   }}
 resolv_domain: '{{ domain_name | d(omit) }}'
 
-# Role: prometheus-node-exporter
+# Role: node_exporter
 # -----------------------------------------------------------------------------
 
 node_exporter__enable: true
@@ -103,7 +103,7 @@ node_exporter__extra_args: |
   --collector.cpu.info
   {% endif %}
 
-# Role: prometheus_blackbox_exporter
+# Role: blackbox_exporter
 # -----------------------------------------------------------------------------
 
 blackbox_exporter__enable: false
@@ -126,3 +126,8 @@ glauth__enable: false
 
 tinc__netname: tinc
 tinc__install_ferm_svc: '{{ ferm__enable | bool }}'
+
+# Not yet a role: dehydrated
+# -----------------------------------------------------------------------------
+dehydrated__enable: false
+dehydrated__cert_path: /var/lib/dehydrated/certs

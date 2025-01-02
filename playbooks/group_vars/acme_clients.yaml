@@ -4,7 +4,10 @@
 # Reusable defaults for ACME (letsencrypt) clients.
 # =============================================================================
 
+# Until a role/playbook is written, this is only informative.
+dehydrated__enable: true
+
 apt__packages_to_install__acme:
   - dehydrated
 apt__packages_to_install__acme_apache: |-
-  {{ ['dehydrated-apache2'] if 'apache_servers' in group_names else [] }}
+  {{ ['dehydrated-apache2'] if apache2__enable else [] }}
