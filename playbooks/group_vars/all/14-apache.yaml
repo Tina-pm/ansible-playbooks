@@ -35,7 +35,7 @@ apache2__default_site_force_ssl: '{{ apache2__default_ssl_enable }}'
 apache2__mods__base:
   rewrite:
     state: |-
-      {{ 'enabled' if apache2__default_site_force_ssl else 'absent' }}
+      {{ 'enabled' if apache2__default_site_force_ssl else 'present' }}
 
 apache2__sites__base:
   000-default:
@@ -63,10 +63,10 @@ apache2__listen_https__ssl: '{{ [443] if apache2__use_ssl else [] }}'
 apache2__mods__ssl:
   md:
     state: |-
-      {{ 'enabled' if apache2__use_ssl and apache2__use_md else 'absent' }}
+      {{ 'enabled' if apache2__use_ssl and apache2__use_md else 'present' }}
   ssl:
     state: |-
-      {{ 'enabled' if apache2__use_ssl else 'absent' }}
+      {{ 'enabled' if apache2__use_ssl else 'present' }}
 
 apache2__conf__ssl:
   md:
