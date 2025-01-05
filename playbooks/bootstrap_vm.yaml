@@ -40,6 +40,7 @@
 
 - name: Prepare host
   hosts: vm_hosts
+  become: true
   tasks:
     - name: Configure VM host, storage pools, and networks
       ansible.builtin.include_role:
@@ -73,6 +74,7 @@
 
 - name: Create and set-up VMs in host
   hosts: vm_hosts
+  become: true
   vars:
     _all_guests: |-
       {{ libvirt__local_guests | intersect(_limit_hosts) }}
@@ -142,6 +144,7 @@
 - name: Adjust VM partitions and filesystems
   hosts: libvirt_guests
   gather_facts: false
+  become: true
   tasks:
     - name: Wait for system to become reachable
       ansible.builtin.wait_for_connection:

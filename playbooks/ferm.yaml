@@ -2,6 +2,7 @@
 ---
 - name: Install and configure ferm
   hosts: all
+  become: true
   roles:
     - role: tina_pm.common.ferm
       when: ferm__enable

@@ -126,6 +126,7 @@ glauth__enable: false
 
 tinc__netname: tinc
 tinc__install_ferm_svc: '{{ ferm__enable | bool }}'
+tinc__local_cache: '{{ inventory_dir }}/fetch'
 
 # Not yet a role: dehydrated
 # -----------------------------------------------------------------------------

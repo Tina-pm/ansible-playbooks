@@ -4,6 +4,7 @@
 ---
 - name: Set up network time syncronization
   hosts: all
+  become: true
   roles:
     - role: tina_pm.third_party.ntp
       when: ntp_enabled

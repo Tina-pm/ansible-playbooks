@@ -4,6 +4,7 @@
 ---
 - name: Automatic IP blocking with `fail2ban`
   hosts: all
+  become: true
   roles:
     - role: tina_pm.common.fail2ban
       when: ferm__enable and fail2ban__enable
