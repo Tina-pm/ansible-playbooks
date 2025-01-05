@@ -5,6 +5,7 @@
 ---
 - name: Upgrade packages
   hosts: all
+  become: true
   roles:
     - role: tina_pm.common.apt
       vars:

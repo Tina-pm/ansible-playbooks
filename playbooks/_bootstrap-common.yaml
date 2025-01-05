@@ -10,6 +10,7 @@
 ---
 - name: Run bootstrapping roles
   hosts: '{{ target_hosts | d("all") }}'
+  become: true
   vars:
     play_net_enable: '{{ net__enable | d(false) }}'
     play_resolv_enable: '{{ resolv__enable | d(false) }}'

@@ -2,6 +2,7 @@
 ---
 - name: Set up user accounts and home directories
   hosts: all
+  become: true
   roles:
     - role: tina_pm.common.users
       tags: users

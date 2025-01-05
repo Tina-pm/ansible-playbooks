@@ -4,6 +4,7 @@
 ---
 - name: Install bind9 server
   hosts: all
+  become: true
   roles:
     - role: tina_pm.common.simple_bind
       when: simple_bind__enable

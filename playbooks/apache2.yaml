@@ -4,6 +4,7 @@
 ---
 - name: Setup apache2 server and configurations
   hosts: all
+  become: true
   roles:
     - role: tina_pm.common.apache2
       when: apache2__enable

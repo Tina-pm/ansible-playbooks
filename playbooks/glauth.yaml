@@ -4,6 +4,7 @@
 ---
 - name: Install and configure fast and lightweight LDAP server
   hosts: all
+  become: true
   roles:
     - role: tina_pm.common.glauth
       when: glauth__enable

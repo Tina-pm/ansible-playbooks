@@ -4,6 +4,7 @@
 ---
 - name: Install and configure VPN
   hosts: tinc_servers
+  become: true
   roles:
     - role: tina_pm.third_party.tinc
       tags: tinc

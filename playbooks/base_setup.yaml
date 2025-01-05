@@ -4,6 +4,7 @@
 ---
 - name: Set up host base configuration
   hosts: all
+  become: true
   roles:
     - role: tina_pm.common.base_setup
       tags: base_setup
