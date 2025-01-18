@@ -10,10 +10,21 @@ vm_hostvars: '{{ hostvars[vm_host] }}'
 # (i.e.: all VM definitions), as they create circular dependencies that cannot
 # be resolved.
 
-# Connection values.
-ansible_connection: community.libvirt.libvirt_qemu
-ansible_libvirt_uri: qemu+ssh://{{ vm_hostvars.ansible_host }}/system
-ansible_host: '{{ vm_name }}'
+# Connect using QEMU guest agent.
+libvirt__vm_use_qemu_connection: true
+ansible_connection: |-
+  {{
+    libvirt__vm_use_qemu_connection |
+    ternary('community.libvirt.libvirt_qemu', 'ansible.builtin.ssh')
+  }}
+ansible_libvirt_uri: |-
+  qemu+ssh://{{
+    vm_hostvars.get('ansible_ssh_host') or
+    vm_hostvars.get('ansible_host') or
+    vm_hostvars.get('inventory_hostname')
+  }}/system
+ansible_host: |-
+  {{ libvirt__vm_use_qemu_connection | ternary(vm_name, host_fqdn) }}
 
 bootstrap__install_packages__libvirt:
   - ifupdown
