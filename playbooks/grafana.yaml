@@ -10,10 +10,6 @@
   become: true
 
   tasks:
-    - name: Execute apt role for sources configuration
-      ansible.builtin.include_role:
-        name: tina_pm.common.apt
-
     - name: Install package
       ansible.builtin.package:
         name: grafana
