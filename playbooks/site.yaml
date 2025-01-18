@@ -9,8 +9,8 @@
 - name: Install and configure VPN
   import_playbook: ./tinc.yaml
 
-- name: APT distribution, sources, PGP keys, and preferences
-  import_playbook: ./apt_upgrade.yaml
+- name: Configure APT and install required packages
+  import_playbook: ./apt.yaml
 
 - name: NTP time synchronisation
   import_playbook: ./ntp.yaml

@@ -1,0 +1,10 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Configure APT distribution, sources, PGP keys, and preferences;
+# and install required packages.
+---
+- name: Configure APT and install required packages
+  hosts: all
+  become: true
+  roles:
+    - role: tina_pm.common.apt
