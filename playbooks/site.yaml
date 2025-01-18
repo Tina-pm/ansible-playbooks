@@ -24,6 +24,9 @@
 - name: Simple DNS server with `bind`
   import_playbook: ./simple_bind.yaml
 
+- name: Complex DNS server configuration with `bind`
+  import_playbook: ./bind_config.yaml
+
 - name: DNS resolution configuration
   import_playbook: ./resolv.yaml
 
