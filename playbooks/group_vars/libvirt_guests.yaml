@@ -14,8 +14,9 @@ vm_hostvars: '{{ hostvars[vm_host] }}'
 libvirt__vm_use_qemu_connection: true
 ansible_connection: |-
   {{
-    libvirt__vm_use_qemu_connection |
-    ternary('community.libvirt.libvirt_qemu', 'ansible.builtin.ssh')
+    'community.libvirt.libvirt_qemu' if
+    libvirt__vm_use_qemu_connection | bool else
+    'ansible.builtin.ssh'
   }}
 ansible_libvirt_uri: |-
   qemu+ssh://{{
@@ -24,7 +25,7 @@ ansible_libvirt_uri: |-
     vm_hostvars.get('inventory_hostname')
   }}/system
 ansible_host: |-
-  {{ libvirt__vm_use_qemu_connection | ternary(vm_name, host_fqdn) }}
+  {{ vm_name if libvirt__vm_use_qemu_connection | bool else host_fqdn }}
 
 bootstrap__install_packages__libvirt:
   - ifupdown
