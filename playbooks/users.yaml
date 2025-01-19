@@ -2,6 +2,7 @@
 ---
 - name: Set up user accounts and home directories
   hosts: all
+  gather_facts: true
   become: true
   roles:
     - role: tina_pm.common.users

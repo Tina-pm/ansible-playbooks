@@ -4,7 +4,9 @@
 ---
 - name: Set up prometheus node_exporter
   hosts: all
+  gather_facts: false
   become: true
+
   roles:
     - role: tina_pm.common.prometheus_node_exporter
       when: node_exporter__enable

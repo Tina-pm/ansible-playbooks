@@ -4,6 +4,7 @@
 ---
 - name: Automatic IP blocking with `fail2ban`
   hosts: all
+  gather_facts: false
   become: true
   roles:
     - role: tina_pm.common.fail2ban

@@ -4,6 +4,7 @@
 ---
 - name: Configure resolv
   hosts: all
+  gather_facts: false
   become: true
   roles:
     - role: tina_pm.third_party.resolv
