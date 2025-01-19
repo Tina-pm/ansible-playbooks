@@ -1,0 +1,11 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+- name: _tina_restart_grafana
+  ansible.builtin.service:
+    name: grafana-server
+    state: restarted
+
+- name: _tina_reload_ferm
+  ansible.builtin.service:
+    name: ferm
+    state: reloaded

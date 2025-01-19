@@ -1,0 +1,17 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+# Pre-processing and validation of parameters.
+
+_grafana_install_ferm_svc: |-
+  {{ grafana__install_ferm_svc | d(False) | bool }}
+
+_grafana_ferm_allow_from: |-
+  {{
+    None
+    if not grafana__ferm_allow_from else
+    [grafana__ferm_allow_from]
+    if grafana__ferm_allow_from is not iterable or
+    grafana__ferm_allow_from is string
+    else grafana__ferm_allow_from
+  }}

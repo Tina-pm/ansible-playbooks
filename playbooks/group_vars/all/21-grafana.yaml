@@ -1,5 +1,19 @@
 # vim:ts=2:sw=2:et:ai:sts=2
+
+# Role: Install and configure grafana
 ---
+
+grafana__enable: false
+
+grafana__install_ferm_svc: '{{ ferm__enable | bool }}'
+grafana__ferm_allow_from: '{{ internal_networks }}'
+
+grafana__server__domain: monitoring.{{ domain_name }}
+grafana__smtp__from_address: grafana@{{ host_fqdn }}
+
+grafana__auth_anonymous__enabled: false
+grafana__auth_ldap__enabled: '{{ _grafana_use_ldap }}'
+grafana__auth_basic__enabled: '{{ not _grafana_use_ldap }}'
 
 # Use LDAP if GLAuth is enabled.
 _grafana_use_ldap: '{{ glauth__enable | d() | bool }}'
@@ -24,19 +38,3 @@ grafana__ldap__servers__start_tls: '{{
   not _grafana_ldap_use_ldaps or _grafana_ldap_svc.get("tls") }}'
 grafana__ldap__servers__ssl_skip_verify: false
 grafana__ldap__servers__bind_dn:
-
-grafana__ldap__servers__password:
-grafana__ldap__servers__search_filter:
-grafana__ldap__servers__base_dns:
-grafana__ldap__servers_atributes__name: givenName
-grafana__ldap__servers_atributes__surname: sn
-grafana__ldap__servers_atributes__username: cn
-grafana__ldap__servers_atributes__member_of: memberOf
-grafana__ldap__servers_atributes__email: mail
-grafana__ldap__servers_group_mappings:
-  - group_dn: cn=admins,ou=groups,dc=grafana,dc=org
-    org_role: Admin
-  - group_dn: cn=users,ou=groups,dc=grafana,dc=org
-    org_role: Editor
-  - group_dn: '*'
-    org_role: Viewer

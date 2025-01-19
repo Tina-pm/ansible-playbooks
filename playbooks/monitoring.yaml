@@ -1,8 +1,9 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 
-# Playbook: Set up Prometheus, `node_exporter`, `mtail` and `blackbox exporter`.
+# Playbook: Set up Prometheus, Grafana, `node_exporter`, `mtail` and `blackbox
+# exporter`.
 ---
-- name: Set up prometheus node_exporter
+- name: Set up monitoring stack
   hosts: all
   gather_facts: false
   become: true
@@ -12,31 +13,18 @@
       when: node_exporter__enable
       tags: [monitoring, node-eporter]
 
-- name: Set up mtail log extractor
-  hosts: all
-  become: true
-  roles:
     - role: tina_pm.common.mtail
       when: mtail__enable
       tags: [monitoring, mtail]
 
-- name: Install and configure prometheus
-  hosts: all
-  become: true
-  roles:
-    - role: tina_pm.common.prometheus
-      when: inventory_hostname in groups['prometheus_servers']
-      tags: [monitoring, prometheus]
-
-- name: Set up blackbox exporter prober
-  hosts: all
-  become: true
-  roles:
     - role: tina_pm.common.prometheus_blackbox_exporter
       when: blackbox_exporter__enable
       tags: [monitoring, blackbox-exporter]
 
-# TODO(monica): Convert grafana playbook to a role
-- name: Install and configure grafana
-  import_playbook: ./grafana.yaml
-  tags: [monitoring, grafana]
+    - role: tina_pm.common.prometheus
+      when: inventory_hostname in groups['prometheus_servers']
+      tags: [monitoring, prometheus]
+
+    - role: tina_pm.playbooks.grafana
+      when: grafana__enable
+      tags: [monitoring, grafana]
