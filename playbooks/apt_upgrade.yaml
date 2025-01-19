@@ -8,6 +8,7 @@
   become: true
   roles:
     - role: tina_pm.common.apt
+      tags: apt
       vars:
         apt__run_upgrade: true
         apt__run_autoremove: true

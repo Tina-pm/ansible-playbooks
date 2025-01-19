@@ -10,7 +10,7 @@
   roles:
     - role: tina_pm.common.prometheus_node_exporter
       when: node_exporter__enable
-      tags: [prometheus, node-eporter]
+      tags: [monitoring, node-eporter]
 
 - name: Set up mtail log extractor
   hosts: all
@@ -18,7 +18,7 @@
   roles:
     - role: tina_pm.common.mtail
       when: mtail__enable
-      tags: [prometheus, mtail]
+      tags: [monitoring, mtail]
 
 - name: Install and configure prometheus
   hosts: all
@@ -26,7 +26,7 @@
   roles:
     - role: tina_pm.common.prometheus
       when: inventory_hostname in groups['prometheus_servers']
-      tags: prometheus
+      tags: [monitoring, prometheus]
 
 - name: Set up blackbox exporter prober
   hosts: all
@@ -34,8 +34,9 @@
   roles:
     - role: tina_pm.common.prometheus_blackbox_exporter
       when: blackbox_exporter__enable
-      tags: [prometheus, blackbox-exporter]
+      tags: [monitoring, blackbox-exporter]
 
 # TODO(monica): Convert grafana playbook to a role
 - name: Install and configure grafana
   import_playbook: ./grafana.yaml
+  tags: [monitoring, grafana]
