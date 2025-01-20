@@ -1,0 +1,100 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+- name: Install needed packages
+  ansible.builtin.package:
+    name:
+      - acl
+      - aptly
+      - dctrl-tools
+    state: present
+
+- name: Create repo user
+  ansible.builtin.group:
+    name: '{{ aptly__repo_owner }}'
+    system: true
+
+- name: Create repo group
+  ansible.builtin.group:
+    name: '{{ aptly__repo_group }}'
+    system: true
+
+- name: Create Debian repo directories
+  ansible.builtin.file:
+    state: directory
+    dest: '{{ item }}'
+    owner: '{{ aptly__repo_owner }}'
+    group: '{{ aptly__repo_group }}'
+    mode: u=rwX,g=rwX,o=rX
+  loop:
+    - '{{ aptly__root_dir }}'
+    - '{{ aptly__fspub_endpoint_path }}'
+
+- name: Set extended permissions
+  ansible.posix.acl:
+    state: present
+    path: '{{ item }}'
+    default: false
+    etype: group
+    entity: '{{ aptly__repo_group }}'
+    permissions: rwX
+  loop:
+    - '{{ aptly__root_dir }}'
+    - '{{ aptly__fspub_endpoint_path }}'
+
+- name: Set default extended permissions
+  ansible.posix.acl:
+    state: present
+    path: '{{ item }}'
+    default: true
+    etype: group
+    entity: '{{ aptly__repo_group }}'
+    permissions: rwX
+  loop:
+    - '{{ aptly__root_dir }}'
+    - '{{ aptly__fspub_endpoint_path }}'
+
+- name: Configure aptly
+  ansible.builtin.template:
+    src: aptly.conf.j2
+    dest: /etc/aptly.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Find existing repos
+  ansible.builtin.command:
+    argv:
+      - aptly
+      - repo
+      - list
+      - -raw
+  register: _aptly_repos
+  check_mode: false
+  changed_when: false
+
+- name: Create repos
+  ansible.builtin.command:
+    argv:
+      - aptly
+      - repo
+      - create
+      - -distribution={{ item }}
+      - -component=main
+      - '{{ item }}'
+  loop: '{{ _missing_repos }}'
+  vars:
+    _missing_repos: '{{
+      aptly__repo_dists | difference(_aptly_repos.stdout_lines) }}'
+  changed_when: item in _missing_repos
+
+- name: Publish repos
+  ansible.builtin.command:
+    argv:
+      - aptly
+      - publish
+      - repo
+      - -architectures=source,amd64
+      - '{{ item }}'
+      - 'filesystem:{{ aptly__fspub_endpoint_name }}:'
+    creates: '{{ aptly__fspub_endpoint_path }}/dists/{{ item }}/Release'
+  loop: '{{ aptly__repo_dists }}'

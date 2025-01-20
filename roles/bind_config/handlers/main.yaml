@@ -1,0 +1,17 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+- name: _tina_validate_bind9_conf
+  ansible.builtin.command:
+    cmd: named-checkconf
+    chdir: /etc/bind
+  changed_when: false
+
+- name: _tina_reload_bind9
+  ansible.builtin.service:
+    name: bind9
+    state: reloaded
+
+- name: _tina_reload_ferm
+  ansible.builtin.service:
+    name: ferm
+    state: reloaded

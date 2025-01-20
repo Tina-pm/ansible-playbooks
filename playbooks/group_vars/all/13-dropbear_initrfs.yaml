@@ -1,12 +1,12 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
 # =============================================================================
-# Defaults for Dropbear initramfs playbook.
+# Defaults for dropbear-initramfs role.
 # =============================================================================
 
-dropbear_initramfs__authorized_keys_file:
-  /etc/dropbear/initramfs/authorized_keys
+dropbear_initramfs__enable: false
 
+# Allow all admin users to connect to the initramfs.
 dropbear_initramfs__authorized_keys: |-
   {{
     users__admins_from_def |

@@ -1,6 +1,7 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
-aptly__root_dir: /srv/debian
+aptly__root_dir: /var/lib/aptly/
+aptly__repo_owner: root
 aptly__repo_group: debrepo
 
 aptly__repo_dists:
@@ -10,4 +11,4 @@ aptly__repo_dists:
 
 # TODO(dato): make `aptly__fspub_endpoints` into a map or list.
 aptly__fspub_endpoint_name: filesystem
-aptly__fspub_endpoint_path: /srv/www/aptly/html/
+aptly__fspub_endpoint_path: /var/www/debian/

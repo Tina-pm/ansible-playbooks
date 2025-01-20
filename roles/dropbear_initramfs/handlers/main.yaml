@@ -1,0 +1,6 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+- name: _tina_update_initramfs
+  ansible.builtin.command:
+    cmd: /usr/sbin/update-initramfs -u -k all
+  changed_when: true

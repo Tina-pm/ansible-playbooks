@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+domain (ip ip6) table filter chain INPUT {
+    proto (tcp udp)
+{% if _bind_config_ferm_allow_from %}
+    saddr @ipfilter(({{ ' '.join(_bind_config_ferm_allow_from) }}))
+{% endif %}
+    dport ({{ ' '.join(_bind_config_ferm_ports | map('string')) }}) ACCEPT;
+}

@@ -1,0 +1,42 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+# Playbook: Set up and configure grafana.
+---
+- name: Install package
+  ansible.builtin.package:
+    name: grafana
+    state: present
+
+- name: Configure grafana
+  ansible.builtin.template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+    owner: root
+    group: grafana
+    mode: '0640'
+  notify: _tina_restart_grafana
+
+- name: Configure ldap server if available
+  ansible.builtin.template:
+    src: ldap.toml.j2
+    dest: /etc/grafana/ldap.toml
+    owner: root
+    group: grafana
+    mode: '0640'
+  when: grafana__auth_ldap__enabled | bool
+  notify: _tina_restart_grafana
+
+- name: Install ferm configuration
+  ansible.builtin.template:
+    src: ferm.conf.j2
+    dest: /etc/ferm/ferm.d/grafana.conf
+    owner: root
+    group: adm
+    mode: '0644'
+  notify: _tina_reload_ferm
+  when: _grafana_install_ferm_svc
+
+- name: Start and enable service
+  ansible.builtin.service:
+    name: grafana-server
+    state: started
+    enabled: true

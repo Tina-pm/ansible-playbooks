@@ -1,0 +1,29 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+# Pre-processing and validation of parameters.
+
+_bind_config_install_ferm_svc: |-
+  {{ bind_config__install_ferm_svc | d(False) | bool }}
+
+_bind_config_ferm_allow_from: |-
+  {{
+    None
+    if not bind_config__ferm_allow_from else
+    [bind_config__ferm_allow_from]
+    if bind_config__ferm_allow_from is not iterable or
+    bind_config__ferm_allow_from is string
+    else bind_config__ferm_allow_from
+  }}
+
+_bind_config_ferm_ports: |-
+  {{
+    ['domain']
+    if not bind_config__ferm_ports else
+    [bind_config__ferm_ports]
+    if (
+      bind_config__ferm_ports is not iterable or
+      bind_config__ferm_ports is string
+    )
+    else bind_config__ferm_ports
+  }}

@@ -1,0 +1,8 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# SSH public keys allowed to log in to the initramfs.
+dropbear_initramfs__authorized_keys: ~
+
+# Path to the authorized_keys file.
+dropbear_initramfs__authorized_keys_file:
+  /etc/dropbear/initramfs/authorized_keys

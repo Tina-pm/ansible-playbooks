@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+domain (ip ip6) table filter chain INPUT {
+    proto tcp
+{% if _grafana_ferm_allow_from %}
+    saddr @ipfilter(({{ ' '.join(_grafana_ferm_allow_from) }}))
+{% endif %}
+    dport ({{ grafana__server__http_port }}) ACCEPT;
+}

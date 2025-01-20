@@ -1,0 +1,13 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+# Configuration files to copy (globs accepted).
+bind_config__conf_files: []
+
+# If true, install ferm configuration file.
+bind_config__install_ferm_svc: false
+# Optionally limit access to a list of IP addresses.
+bind_config__ferm_allow_from: ~
+# Ports to allow in ferm.
+bind_config__ferm_ports:
+  - domain

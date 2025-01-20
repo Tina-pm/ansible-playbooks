@@ -43,6 +43,11 @@ bootstrap__install_packages__common:
   - python3
   - python3-apt
 
+# Role: aptly
+# -----------------------------------------------------------------------------
+
+aptly__enable: false
+
 # Role: net
 # -----------------------------------------------------------------------------
 
@@ -73,6 +78,13 @@ fail2ban__install_ferm_svc: '{{ ferm__enable | bool }}'
 
 simple_bind__enable: false
 simple_bind__install_ferm_svc: '{{ ferm__enable | bool }}'
+
+# Role: bind_config
+# -----------------------------------------------------------------------------
+
+bind_config__enable: false
+bind_config__install_ferm_svc: '{{ ferm__enable | bool }}'
+bind_config__conf_files: '{{ inventory_dir }}/bind/*'
 
 # Role: resolv
 # -----------------------------------------------------------------------------

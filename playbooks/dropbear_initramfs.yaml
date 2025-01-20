@@ -1,0 +1,12 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Manage dropbear-initramfs authorized keys.
+---
+- name: Manage dropbear-initramfs authorized keys
+  hosts: all
+  become: true
+  gather_facts: false
+  roles:
+    - role: tina_pm.playbooks.dropbear_initramfs
+      tags: dropbear_initramfs
+      when: dropbear_initramfs__enable
