@@ -33,3 +33,7 @@
     - role: tina_pm.common.prometheus_blackbox_exporter
       when: blackbox_exporter__enable
       tags: [prometheus, blackbox-exporter]
+
+# TODO(monica): Convert grafana playbook to a role
+- name: Install and configure grafana
+  import_playbook: ./grafana.yaml
