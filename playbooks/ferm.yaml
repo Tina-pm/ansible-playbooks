@@ -2,6 +2,7 @@
 ---
 - name: Install and configure ferm
   hosts: all
+  gather_facts: false
   become: true
   roles:
     - role: tina_pm.common.ferm

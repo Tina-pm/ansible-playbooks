@@ -9,8 +9,8 @@
 - name: Install and configure VPN
   import_playbook: ./tinc.yaml
 
-- name: APT distribution, sources, PGP keys, and preferences
-  import_playbook: ./apt_upgrade.yaml
+- name: Configure APT and install required packages
+  import_playbook: ./apt.yaml
 
 - name: NTP time synchronisation
   import_playbook: ./ntp.yaml
@@ -23,6 +23,9 @@
 
 - name: Simple DNS server with `bind`
   import_playbook: ./simple_bind.yaml
+
+- name: Complex DNS server configuration with `bind`
+  import_playbook: ./bind_config.yaml
 
 - name: DNS resolution configuration
   import_playbook: ./resolv.yaml

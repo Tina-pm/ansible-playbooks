@@ -8,7 +8,10 @@
   become: true
   roles:
     - role: tina_pm.common.apt
+      tags: apt
       vars:
         apt__run_upgrade: true
         apt__run_autoremove: true
         apt__purge_removed: true
+        # QEMU guest agent will disconnect during an upgrade.
+        libvirt__vm_use_qemu_connection: false
