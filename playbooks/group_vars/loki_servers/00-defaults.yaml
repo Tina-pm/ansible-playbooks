@@ -5,13 +5,6 @@ loki__http_listen_port: 3100
 loki__grpc_listen_port: 9096
 loki__storage_dir: /var/lib/loki
 
-apt__packages_to_install__loki:
-  - loki
-apt__services_to_enable__loki:
-  - loki
-apt__services_to_start__loki:
-  - loki
-
 ferm__services__loki:
   loki-http:
     dport: 3100

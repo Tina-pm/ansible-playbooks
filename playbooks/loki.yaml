@@ -6,6 +6,11 @@
   hosts: loki_servers
   become: true
   tasks:
+    - name: Install loki
+      ansible.builtin.package:
+        name: loki
+        state: present
+
     - name: Create '{{ loki__storage_dir }}'
       ansible.builtin.file:
         path: '{{ loki__storage_dir }}'
@@ -22,6 +27,12 @@
         group: root
         mode: '0644'
       notify: _tina_restart_loki
+
+    - name: Start and enable service
+      ansible.builtin.service:
+        name: loki
+        state: started
+        enabled: true
 
   handlers:
     - name: _tina_restart_loki
