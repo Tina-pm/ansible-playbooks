@@ -1,6 +1,10 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
 
+loki__http_listen_port: 3100
+loki__grpc_listen_port: 9096
+loki__storage_dir: /var/lib/loki
+
 apt__packages_to_install__loki:
   - loki
 apt__services_to_enable__loki:
@@ -17,3 +21,4 @@ ferm__services__loki:
     dport: 9096
     proto: tcp
     saddr: '{{ internal_networks }}'
+

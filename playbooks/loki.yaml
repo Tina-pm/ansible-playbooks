@@ -1,0 +1,30 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Configure loki.
+---
+- name: Configure loki
+  hosts: loki_servers
+  become: true
+  tasks:
+    - name: Create '{{ loki__storage_dir }}'
+      ansible.builtin.file:
+        path: '{{ loki__storage_dir }}'
+        state: directory
+        owner: loki
+        group: nogroup
+        mode: '0755'
+
+    - name: Configure loki
+      ansible.builtin.template:
+        src: files/loki/config.yml.j2
+        dest: /etc/loki/config.yml
+        owner: root
+        group: root
+        mode: '0644'
+      notify: _tina_restart_loki
+
+  handlers:
+    - name: _tina_restart_loki
+      ansible.builtin.service:
+        name: loki
+        state: restarted
