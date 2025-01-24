@@ -31,3 +31,24 @@ repos:
       - id: ansible-lint
         additional_dependencies:
           - ansible
+
+  - repo: local
+    hooks:
+      # Needs `apt install shellcheck`.
+      - id: shellcheck
+        name: shellcheck
+        description: Static analysis tool for shell scripts
+        language: system
+        entry: shellcheck
+        args: [-f, gcc]
+        types: [shell]
+
+      # Needs `apt install shfmt`.
+      - id: shfmt
+        name: shfmt
+        description: Shell source code formatter
+        language: system
+        entry: shfmt
+        args: [-w, -s]
+        types: [shell]
+        exclude_types: [csh, tcsh, zsh]

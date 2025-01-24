@@ -24,6 +24,9 @@ jobs:
         with:
           python-version: 3.9
 
+      - name: Install shellcheck, shfmt
+        run: sudo apt-get install -y shellcheck shfmt
+
       - id: pre-commit
         uses: pre-commit/action@v3.0.1
         env:
