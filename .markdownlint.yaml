@@ -1,0 +1,9 @@
+# Default state for all rules
+default: true
+# Path to configuration file to extend
+extends: null
+
+# MD013/line-length
+MD013:
+  line_length: 80
+  stern: true
