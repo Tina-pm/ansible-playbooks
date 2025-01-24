@@ -1,4 +1,4 @@
-Ansible collection: tina\_pm.playbooks
+# Ansible collection: tina\_pm.playbooks
 
 This is an opinionated collection of playbooks and variable templates using
 roles from the tina\_pm.common collection as well as various third-party roles.
@@ -52,6 +52,7 @@ playbook_dir = .collections/ansible_collections/tina_pm/playbooks/playbooks/
   configuration variables, using commong prefixes (e.g.
   Unless overriden, `apt__packages_to_install` is constructed by concatenanting
   all variables named `apt__packages_to_install__*`).
-* A simple system to define full ifupdown-based network configuration is provided.
+* A simple system to define full ifupdown-based network configuration is
+  provided.
 * Whenever possible, variables are prefixed by their associated role name,
   followed by 2 underscores.
