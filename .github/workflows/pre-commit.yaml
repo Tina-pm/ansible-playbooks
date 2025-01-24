@@ -26,6 +26,9 @@ jobs:
 
       - id: pre-commit
         uses: pre-commit/action@v3.0.1
+        env:
+          # `ansible-lint` is run in a separate workflow.
+          SKIP: ansible-lint
 
       - id: suggest-changes
         uses: parkerbxyz/suggest-changes@v1

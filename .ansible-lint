@@ -3,3 +3,6 @@
 profile: production
 skip_list:
   - meta-runtime[unsupported-version]  # 2.14 deemed too old by ansible-lint
+exclude_paths:
+  - .pre-commit-config.yaml
+  - .yamllint.yaml
