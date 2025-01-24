@@ -1,0 +1,11 @@
+[*.{css,js,json,less,md,py,rst,sass,scss,xml,yaml,yml,sh}]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 80
+
+[*.{json,yml,yaml,rst,md,sh}]
+indent_size = 2
