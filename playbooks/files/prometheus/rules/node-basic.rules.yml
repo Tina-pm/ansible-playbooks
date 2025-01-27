@@ -14,8 +14,9 @@ groups:
           node_memory_MemFree_bytes{job="node"} -
           node_memory_Buffers_bytes{job="node"} -
           node_memory_Cached_bytes{job="node"}
-      - record:
-          instance:node_memory_MemUsed_bytes_per_node_memory_MemTotal_bytes:ratio
+      - record: >-
+          instance:node_memory_MemUsed_bytes_per_node_memory_MemTotal_bytes
+          :ratio
         expr: |
           instance:node_memory_MemUsed_bytes:sum{job="node"}
           /
@@ -62,14 +63,16 @@ groups:
         expr: node_filesystem_free_bytes{job="node"}
       - record: instance:node_filesystem_size_bytes:sum
         expr: node_filesystem_size_bytes{job="node"}
-      - record:
-          instance:node_filesystem_avail_bytes_per_node_filesystem_size_bytes:ratio
+      - record: >-
+          instance:node_filesystem_avail_bytes_per_node_filesystem_size_bytes
+          :ratio
         expr: |
           node_filesystem_avail_bytes{job="node"}
           /
           node_filesystem_size_bytes{job="node"}
-      - record:
-          instance:node_filesystem_free_bytes_per_node_filesystem_size_bytes:ratio
+      - record: >-
+          instance:node_filesystem_free_bytes_per_node_filesystem_size_bytes
+          :ratio
         expr: |
           node_filesystem_free_bytes{job="node"}
           /
