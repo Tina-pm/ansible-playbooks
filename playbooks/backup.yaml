@@ -33,7 +33,7 @@
           RESTIC_PASSWORD_FILE=/usr/local/etc/restic_password
           RESTIC_REPOSITORY={{ backup__restic_repository }}
           chronic /usr/local/sbin/backup.sh
-        dest: /etc/cron.daily/backup.sh
+        dest: /etc/cron.daily/backup
         owner: root
         group: root
         mode: '0775'
