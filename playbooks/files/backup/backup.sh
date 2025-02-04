@@ -63,7 +63,8 @@ is_filesystem(){
   # Exit with 0 if the parameter is a device with a supported filesystem, 1
   # otherwise.
   local device=$1
-  grep -q "\b$(blkid -s TYPE -o value $device)$" /proc/filesystems
+  local filesystem=$(blkid -s TYPE -o value $device)
+  test -n "$filesystem" && grep -q "\b${filesystem}$" /proc/filesystems
 }
 
 teardown(){
