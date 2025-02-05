@@ -32,6 +32,8 @@ _grafana_ldap_listen: |-
     mandatory(msg='Missing listen parameter in GLAuth configuration')
   }}
 grafana__ldap__servers__host: '{{ _grafana_ldap_listen.split(":")[0] }}'
+# TODO: grafana__ldap__servers__port must content a int instead of a string
+# Fixed in roles/grafana/templates/ldap.toml.j2
 grafana__ldap__servers__port: '{{ _grafana_ldap_listen.split(":")[1] }}'
 grafana__ldap__servers__use_ssl: '{{ _grafana_ldap_use_ldaps }}'
 grafana__ldap__servers__start_tls: '{{
