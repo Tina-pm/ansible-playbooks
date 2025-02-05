@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+
+domain (ip ip6) table filter chain INPUT {
+{% if loki__http_ferm_allow_from %}
+    saddr @ipfilter(({{ loki__http_ferm_allow_from | join(' ') }}))
+{% endif %}
+    proto tcp dport ({{ loki__http_listen_port }}) ACCEPT;
+{% if loki__grpc_ferm_allow_from %}
+    saddr @ipfilter(({{ loki__grpc_ferm_allow_from | join(' ') }}))
+{% endif %}
+    proto tcp dport ({{ loki__grpc_listen_port }}) ACCEPT;
+}
