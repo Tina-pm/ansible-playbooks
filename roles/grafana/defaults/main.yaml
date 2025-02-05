@@ -34,6 +34,9 @@ grafana__plugins__enable_alpha: true
 # Average, Time Shift.
 grafana__plugins__allow_unsigned: goshposh-metaqueries-datasource
 
+# Graphana paths
+grafana__paths__provisioning: /etc/grafana/provisioning
+
 # LDAP configuration
 grafana__ldap__servers__host: localhost
 grafana__ldap__servers__port: 389
@@ -58,3 +61,7 @@ grafana__ldap__servers_group_mappings:
     org_role: Editor
   - group_dn: '*'
     org_role: Viewer
+
+# Loki data sources, accepts a list of dicts in the format specified in
+# https://grafana.com/docs/grafana/latest/datasources/loki/
+grafana__datasources_loki: []

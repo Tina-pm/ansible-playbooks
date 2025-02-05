@@ -1,0 +1,17 @@
+apiVersion: 1
+
+prune: true
+
+datasources:
+{% for ds in grafana__datasources_loki %}
+{% set defaults = {
+  'type': 'loki',
+  'access': 'proxy',
+  'jsonData': {
+    'timeout': 60,
+    'maxLines': 1000,
+  }
+}
+%}
+  - {{ defaults | combine(ds, recursive=true) | to_nice_yaml(indent=2) | indent(4) }}
+{% endfor %}
