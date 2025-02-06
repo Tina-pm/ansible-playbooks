@@ -5,7 +5,7 @@
     'servers': [
       {
         'host': grafana__ldap__servers__host,
-        'port': grafana__ldap__servers__port,
+        'port': grafana__ldap__servers__port | int,
         'use_ssl': grafana__ldap__servers__use_ssl | bool,
         'start_tls': grafana__ldap__servers__start_tls | bool,
         'ssl_skip_verify': grafana__ldap__servers__ssl_skip_verify | bool,
