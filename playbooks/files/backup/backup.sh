@@ -40,10 +40,7 @@ clean_mount_point(){
 get_backup_location(){
   # Get backup location for device name
   local device_name=$1
-  echo "$BACKUP_FROM_DIR/$(
-    dmsetup info -C --noheadings -o name $device_name |
-      sed 's/--snap$//'
-  )"
+  echo "$BACKUP_FROM_DIR/$(dmsetup info -C --noheadings -o name $device_name)"
 }
 
 get_volumes(){
@@ -63,7 +60,8 @@ is_filesystem(){
   # Exit with 0 if the parameter is a device with a supported filesystem, 1
   # otherwise.
   local device=$1
-  grep -q "\b$(blkid -s TYPE -o value $device)$" /proc/filesystems
+  local filesystem=$(blkid -s TYPE -o value $device)
+  test -n "$filesystem" && grep -q "\b${filesystem}$" /proc/filesystems
 }
 
 teardown(){
@@ -89,19 +87,23 @@ teardown(){
     # partitions, the snapshot will be unmounted or dump will be deleted.
     if is_partition_table /dev/$volume-snap
     then
-      kpartx -l /dev/$volume-snap | while read loop_device _
+      local backup_location=$(get_backup_location /dev/$volume)
+      local loop_device_main=$(losetup --noheadings --output NAME \
+        --associated /dev/$volume-snap)
+      kpartx -l $loop_device_main | while read loop_device_part _
       do
-        findmnt /dev/mapper/$loop_device -no TARGET | while read mount_point
+        local part="p${loop_device_part##*p}"
+        findmnt /dev/$loop_device_part -no TARGET | while read mount_point
         do
-          umount /dev/mapper/$loop_device
+          umount /dev/$loop_device_part
           rmdir $mount_point
-        done
-        if test -f "$(get_backup_location $loop_device)"
+        done || true
+        if test -f "$backup_location$part"
         then
-          rm -f "$(get_backup_location $loop_device)"
+          rm -f "$backup_location$part"
         fi
       done
-      kpartx -d /dev/$volume-snap
+      losetup --detach $loop_device_main
       rm -f "$(get_backup_location /dev/$volume).mbr"
       rm -f "$(get_backup_location /dev/$volume).sfdisk"
     elif test -f "$(get_backup_location /dev/$volume)"
@@ -162,15 +164,16 @@ do
     dd if=/dev/$volume-snap of="$(get_backup_location /dev/$volume).mbr" \
       bs=512 count=1
     sfdisk -d /dev/$volume-snap > "$(get_backup_location /dev/$volume).sfdisk"
-    kpartx -a /dev/$volume-snap
-    kpartx -l /dev/$volume-snap | while read loop_device _
+    backup_location=$(get_backup_location /dev/$volume)
+    loop_device_main=$(losetup --show --find --partscan /dev/$volume-snap)
+    kpartx -l $loop_device_main | while read loop_device_part _
     do
-      if is_filesystem /dev/mapper/$loop_device
+      part="p${loop_device_part##*p}"
+      if is_filesystem /dev/$loop_device_part
       then
-        mount -m -o ro /dev/mapper/$loop_device \
-          "$(get_backup_location $loop_device)"
+        mount -m -o ro /dev/$loop_device_part "$backup_location$part"
       else
-        dd if=/dev/mapper/$loop_device of="$(get_backup_location $loop_device)"
+        dd if=/dev/$loop_device_part of="$backup_location$part"
       fi
     done
   elif is_filesystem /dev/$volume-snap
