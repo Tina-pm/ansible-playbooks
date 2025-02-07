@@ -1,19 +1,12 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
 
-apt__packages_to_install__loki:
-  - loki
-apt__services_to_enable__loki:
-  - loki
-apt__services_to_start__loki:
-  - loki
+loki__http_listen_port: 3100
+loki__grpc_listen_port: 9096
+loki__storage_dir: /var/lib/loki
 
-ferm__services__loki:
-  loki-http:
-    dport: 3100
-    proto: tcp
-    saddr: '{{ internal_networks }}'
-  loki-grpc:
-    dport: 9096
-    proto: tcp
-    saddr: '{{ internal_networks }}'
+# If true, install ferm configuration file.
+loki__install_ferm_svc: '{{ ferm__enable | bool }}'
+# Optionally limit access to a list of IP addresses.
+loki__http_ferm_allow_from: '{{ internal_networks }}'
+loki__grpc_ferm_allow_from: '{{ internal_networks }}'
