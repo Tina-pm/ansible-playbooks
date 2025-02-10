@@ -22,7 +22,7 @@ jobs:
       - id: setup-python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: 3.11
 
       - name: Install shellcheck, shfmt
         run: sudo apt-get install -y shellcheck shfmt
