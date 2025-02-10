@@ -40,3 +40,13 @@
     name: grafana-server
     state: started
     enabled: true
+
+- name: Provision loki data source
+  ansible.builtin.template:
+    src: loki.yaml.j2
+    dest: '{{ grafana__paths__provisioning }}/datasources/loki.yaml'
+    owner: root
+    group: grafana
+    mode: '0644'
+  notify: _tina_restart_grafana
+  # TODO(monica): add when to add this data source only if loki is installed
