@@ -29,10 +29,12 @@
 
     - name: Set up cron job
       ansible.builtin.copy:
-        content: >
-          RESTIC_PASSWORD_FILE=/usr/local/etc/restic_password
-          RESTIC_REPOSITORY={{ backup__restic_repository }}
-          chronic /usr/local/sbin/backup.sh
+        content: |
+          #!/bin/sh
+
+          export RESTIC_PASSWORD_FILE=/usr/local/etc/restic_password
+          export RESTIC_REPOSITORY={{ backup__restic_repository }}
+          exec chronic /usr/local/sbin/backup.sh
         dest: /etc/cron.daily/backup
         owner: root
         group: root
