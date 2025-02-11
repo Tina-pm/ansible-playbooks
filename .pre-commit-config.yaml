@@ -26,7 +26,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/ansible/ansible-lint
-    rev: v25.1.0
+    rev: v24.10.0
     hooks:
       - id: ansible-lint
         additional_dependencies:
@@ -34,16 +34,7 @@ repos:
 
   - repo: local
     hooks:
-      # Needs `apt install shellcheck`.
-      - id: shellcheck
-        name: shellcheck
-        description: Static analysis tool for shell scripts
-        language: system
-        entry: shellcheck
-        args: [-f, gcc]
-        types: [shell]
-
-      # Needs `apt install shfmt`.
+      # Needs `apt install shfmt` or `brew install shfmt`.
       - id: shfmt
         name: shfmt
         description: Shell source code formatter
@@ -52,6 +43,15 @@ repos:
         args: [-w, -s]
         types: [shell]
         exclude_types: [csh, tcsh, zsh]
+
+      # Needs `apt install shellcheck` or `brew install shellcheck`.
+      - id: shellcheck
+        name: shellcheck
+        description: Static analysis tool for shell scripts
+        language: system
+        entry: shellcheck
+        args: [-f, gcc]
+        types: [shell]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.43.0
