@@ -1,0 +1,59 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+default_install_hook_types: [pre-push]
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-json
+      - id: check-shebang-scripts-are-executable
+      - id: check-merge-conflict
+      # - id: check-symlinks
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace
+
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v24.10.0
+    hooks:
+      - id: ansible-lint
+        additional_dependencies:
+          - ansible
+
+  - repo: local
+    hooks:
+      # Needs `apt install shfmt` or `brew install shfmt`.
+      - id: shfmt
+        name: shfmt
+        description: Shell source code formatter
+        language: system
+        entry: shfmt
+        args: [-w, -s]
+        types: [shell]
+        exclude_types: [csh, tcsh, zsh]
+
+      # Needs `apt install shellcheck` or `brew install shellcheck`.
+      - id: shellcheck
+        name: shellcheck
+        description: Static analysis tool for shell scripts
+        language: system
+        entry: shellcheck
+        args: [-f, gcc]
+        types: [shell]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.43.0
+    hooks:
+      - id: markdownlint

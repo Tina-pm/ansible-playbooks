@@ -1,5 +1,0 @@
-# vim:ts=2:sw=2:et:ai:sts=2
----
-profile: production
-skip_list:
-  - meta-runtime[unsupported-version]  # 2.14 deemed too old by ansible-lint

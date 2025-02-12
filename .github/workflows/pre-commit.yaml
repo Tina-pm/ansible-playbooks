@@ -1,0 +1,45 @@
+name: pre-commit
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      # For development, and debugging of the workflow.
+      - force_ci/pre-commit/**
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+
+      - id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install shellcheck, shfmt
+        run: sudo apt-get update && sudo apt-get install -y shellcheck shfmt
+
+      - id: pre-commit
+        uses: pre-commit/action@v3.0.1
+        env:
+          # `ansible-lint` is run in a separate workflow.
+          SKIP: ansible-lint
+
+      - id: suggest-changes
+        uses: parkerbxyz/suggest-changes@v1
+        # Push changes made by pre-commit hooks as suggestions.
+        with:
+          comment:
+            Please run `pre-commit run -a` or commit the suggested changes.
+        # Only run for pull requests, and when pre-commit failed.
+        if: |-
+          failure() && steps.pre-commit.conclusion == 'failure' &&
+          github.event_name == 'pull_request'
