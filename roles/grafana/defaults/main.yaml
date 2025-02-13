@@ -67,3 +67,5 @@ grafana__datasources_prometheus: []
 # Loki data sources, accepts a list of dicts in the format specified in
 # https://grafana.com/docs/grafana/latest/datasources/loki/
 grafana__datasources_loki: []
+grafana__dashboards: [generics]
+grafana__dashboards_path: /etc/grafana/dashboards/
