@@ -40,3 +40,7 @@
     name: grafana-server
     state: started
     enabled: true
+
+- name: Set grafana admin password
+  ansible.builtin.command: >
+    grafana-cli admin reset-admin-password '{{ grafana__admin_password }}'
