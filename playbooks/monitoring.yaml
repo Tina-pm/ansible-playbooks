@@ -11,7 +11,7 @@
   roles:
     - role: tina_pm.common.prometheus_node_exporter
       when: node_exporter__enable
-      tags: [monitoring, node-eporter]
+      tags: [monitoring, node-exporter]
 
     - role: tina_pm.common.mtail
       when: mtail__enable
