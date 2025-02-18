@@ -41,3 +41,6 @@
 
 - name: LDAP server
   import_playbook: ./glauth.yaml
+
+- name: The Lounge
+  import_playbook: ./thelounge.yaml
