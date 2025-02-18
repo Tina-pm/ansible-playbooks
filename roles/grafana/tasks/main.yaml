@@ -41,6 +41,16 @@
     state: started
     enabled: true
 
+- name: Provision prometheus data source
+  ansible.builtin.template:
+    src: ds/prometheus.yaml.j2
+    dest: '{{ grafana__paths__provisioning }}/datasources/prometheus.yaml'
+    owner: root
+    group: grafana
+    mode: '0640'
+  notify: _tina_restart_grafana
+  when: grafana__datasources_prometheus
+
 - name: Provision loki data source
   ansible.builtin.template:
     src: ds/loki.yaml.j2
