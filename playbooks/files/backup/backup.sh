@@ -113,14 +113,14 @@ teardown() {
 }
 
 test ! "${RESTIC_REPOSITORY+x}" -a ! "${RESTIC_REPOSITORY_FILE+x}" &&
-  cat << EOF > /dev/stderr && exit 1
+  cat <<EOF >/dev/stderr && exit 1
 ERROR: Environment variable RESTIC_REPOSITORY or RESTIC_REPOSITORY_FILE should
 be defined
 EOF
 
 test ! "${RESTIC_PASSWORD+x}" -a ! "${RESTIC_PASSWORD_COMMAND+x}" \
   -a ! "${RESTIC_PASSWORD_FILE+x}" &&
-  cat << EOF > /dev/stderr && exit 1
+  cat <<EOF >/dev/stderr && exit 1
 ERROR: Environment variable RESTIC_PASSWORD, RESTIC_PASSWORD_COMMAND or
 RESIC_PASSWORD_FILE should be defined
 EOF
@@ -133,7 +133,7 @@ teardown
 mkdir -p "$BACKUP_FROM_DIR"
 lsblk -l -o TYPE,NAME | grep "^disk " | while read -r _ harddrive; do
   dd if="/dev/$harddrive" of="$BACKUP_FROM_DIR/$harddrive.mbr" bs=512 count=1
-  sfdisk -d "/dev/$harddrive" > "$BACKUP_FROM_DIR/$harddrive.sfdisk"
+  sfdisk -d "/dev/$harddrive" >"$BACKUP_FROM_DIR/$harddrive.sfdisk"
 done
 # Backup boot and EFI
 mount -m "$(findmnt -n -o SOURCE /boot)" "$BACKUP_FROM_DIR/boot"
@@ -153,7 +153,7 @@ get_volumes | while read -r volume; do
     dd if="/dev/$volume-snap" of="$(get_backup_location "/dev/$volume").mbr" \
       bs=512 count=1
     sfdisk -d "/dev/$volume-snap" \
-      > "$(get_backup_location "/dev/$volume").sfdisk"
+      >"$(get_backup_location "/dev/$volume").sfdisk"
     backup_location="$(get_backup_location "/dev/$volume")"
     loop_device_main="$(losetup --show --find --partscan "/dev/$volume-snap")"
     kpartx -l "$loop_device_main" | while read -r loop_device_part _; do
