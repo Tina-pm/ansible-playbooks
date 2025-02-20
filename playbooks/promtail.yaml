@@ -1,0 +1,67 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+
+# Playbook: Install and configure promtail agents.
+---
+- name: Install and configure promtail
+  hosts: promtail_servers
+  become: true
+
+  tasks:
+    - name: Install promtail
+      ansible.builtin.package:
+        name: promtail
+        state: present
+
+    - name: Add promtail user to groups for log reading
+      ansible.builtin.user:
+        name: promtail
+        append: true
+        groups: '{{ promtail__add_to_groups }}'
+      when: promtail__add_to_groups
+
+    - name: Create '{{ promtail__storage_dir }}'
+      ansible.builtin.file:
+        path: '{{ promtail__storage_dir }}'
+        state: directory
+        owner: promtail
+        mode: '0755'
+
+    - name: Configure promtail
+      ansible.builtin.template:
+        src: files/promtail/promtail.yml.j2
+        dest: /etc/promtail/config.yml
+        owner: root
+        group: root
+        mode: '0644'
+      notify: _tina_restart_promtail
+
+    - name: Remove obsolete /etc/promtail/targets directory
+      ansible.builtin.file:
+        path: /etc/promtail/targets
+        state: absent
+
+    - name: Install ferm configuration
+      ansible.builtin.template:
+        src: files/promtail/ferm.conf.j2
+        dest: /etc/ferm/ferm.d/promtail.conf
+        owner: root
+        group: adm
+        mode: '0644'
+      notify: _tina_reload_ferm
+      when: promtail__install_ferm_svc
+
+    - name: Start and enable service
+      ansible.builtin.service:
+        name: promtail
+        state: started
+        enabled: true
+
+  handlers:
+    - name: _tina_restart_promtail
+      ansible.builtin.service:
+        name: promtail
+        state: restarted
+    - name: _tina_reload_ferm
+      ansible.builtin.service:
+        name: ferm
+        state: reloaded
