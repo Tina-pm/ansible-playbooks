@@ -60,3 +60,33 @@
     mode: '0640'
   notify: _tina_restart_grafana
   when: grafana__datasources_loki
+
+- name: Create dashboard provider
+  ansible.builtin.template:
+    src: dashboards.yaml.j2
+    dest: '{{ grafana__paths__provisioning }}/dashboards/dashboards.yaml'
+    owner: root
+    group: grafana
+    mode: '0644'
+  notify: _tina_restart_grafana
+  when: grafana__dashboards
+
+- name: Create dashboards directory
+  ansible.builtin.file:
+    path: '{{ grafana__dashboards_path }}'
+    state: directory
+    owner: grafana
+    group: grafana
+    mode: '0755'
+  when: grafana__dashboards
+
+- name: Provision dashboards
+  ansible.builtin.copy:
+    src: dashboards/{{ item }}/
+    dest: '{{ grafana__dashboards_path }}/{{ item }}/'
+    owner: root
+    group: grafana
+    mode: '0644'
+  loop: '{{ grafana__dashboards }}'
+  notify: _tina_restart_grafana
+  when: grafana__dashboards

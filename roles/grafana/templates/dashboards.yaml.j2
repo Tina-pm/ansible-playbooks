@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'Dashboards'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: false
+    options:
+      path: {{ grafana__dashboards_path | to_yaml | trim }}
+      foldersFromFilesStructure: true

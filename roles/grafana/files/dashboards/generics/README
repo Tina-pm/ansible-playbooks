@@ -1,0 +1,25 @@
+# alertmanager.json
+
+* Source:
+  - https://grafana.com/grafana/dashboards/9578-alertmanager/
+  - https://github.com/FUSAKLA/alertmanager-grafana-dashboard
+
+* License:
+  - THE BEER-WARE LICENSE: https://github.com/FUSAKLA/alertmanager-grafana-dashboard/blob/master/LICENSE
+
+# blackbox-exporter-http-prober.json
+
+* Source:
+  - https://grafana.com/grafana/dashboards/13659-blackbox-exporter-http-prober/
+
+* License:
+  - Not known
+
+# node-exporter-full.json
+
+* Source:
+  - https://grafana.com/grafana/dashboards/1860-node-exporter-full/
+  - https://github.com/rfmoz/grafana-dashboards
+
+* License:
+  - Apache license: https://github.com/rfmoz/grafana-dashboards/blob/master/LICENSE
