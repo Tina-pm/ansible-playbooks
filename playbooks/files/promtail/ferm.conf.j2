@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+domain (ip ip6) table filter chain INPUT {
+{% if promtail__ferm_allow_from %}
+    saddr @ipfilter(({{ promtail__ferm_allow_from | join(' ') }}))
+{% endif %}
+    proto tcp dport ({{ promtail__listen_port }}) ACCEPT;
+}
