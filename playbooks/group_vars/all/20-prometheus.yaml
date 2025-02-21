@@ -15,21 +15,20 @@ prometheus__rules__base:
 # Automatic scraping of inventory hosts, segregated by environment.
 # -----------------------------------------------------------------------------
 
-prometheus__scrape_domain: '{{ inventory_domain_name }}'
 prometheus__prom_servers_group: prometheus_servers
 prometheus__am_servers_group: alertmanager_servers
 
 prometheus__monitored_prometheus__inventory: |-
   {{
     groups[prometheus__prom_servers_group] | sort |
-    map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+    map('extract', hostvars, 'host_fqdn') |
     map('regex_replace', '^(.*)$', '\1:9090') |
     sort | list
   }}
 prometheus__alertmanagers__inventory: |-
   {{
     groups[prometheus__am_servers_group] | sort |
-    map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+    map('extract', hostvars, 'host_fqdn') |
     map('regex_replace', '^(.*)$', '\1:9093') |
     sort | list
   }}
@@ -102,7 +101,7 @@ _prometheus_targets:
       {{
         _hosts_by_env.prod |
         intersect(_hosts_nodeexp_enabled) |
-        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('extract', hostvars, 'host_fqdn') |
         map('regex_replace', '^([^:]*)$', '\1:9100') |
         sort | list
       }}
@@ -110,7 +109,7 @@ _prometheus_targets:
       {{
         _hosts_by_env.test |
         intersect(_hosts_nodeexp_enabled) |
-        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('extract', hostvars, 'host_fqdn') |
         map('regex_replace', '^([^:]*)$', '\1:9100') |
         sort | list
       }}
@@ -118,7 +117,7 @@ _prometheus_targets:
       {{
         _hosts_by_env.dev |
         intersect(_hosts_nodeexp_enabled) |
-        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('extract', hostvars, 'host_fqdn') |
         map('regex_replace', '^([^:]*)$', '\1:9100') |
         sort | list
       }}
@@ -127,7 +126,7 @@ _prometheus_targets:
       {{
         _hosts_by_env.prod |
         intersect(_hosts_mtail_enabled) |
-        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('extract', hostvars, 'host_fqdn') |
         map('regex_replace', '^([^:]*)$', '\1:3903') |
         sort | list
       }}
@@ -135,7 +134,7 @@ _prometheus_targets:
       {{
         _hosts_by_env.test |
         intersect(_hosts_mtail_enabled) |
-        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('extract', hostvars, 'host_fqdn') |
         map('regex_replace', '^([^:]*)$', '\1:3903') |
         sort | list
       }}
@@ -143,7 +142,7 @@ _prometheus_targets:
       {{
         _hosts_by_env.dev |
         intersect(_hosts_mtail_enabled) |
-        map('regex_replace', '^([^.]*)$', '\1.' + prometheus__scrape_domain) |
+        map('extract', hostvars, 'host_fqdn') |
         map('regex_replace', '^([^:]*)$', '\1:3903') |
         sort | list
       }}
