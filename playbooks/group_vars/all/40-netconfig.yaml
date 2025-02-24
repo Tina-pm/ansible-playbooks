@@ -146,7 +146,7 @@ _netconfig__interfaces: |-
   {% if privnet_host %}
       inet:
         method: static
-        address: '{{ privnet_host }}/{{ privnet_mask }}'
+        address: '{{ privnet_net }}'
         gateway: '{{ privnet_gw or None }}'
   {% if privnet_gw and
     not (privnet_net | ansible.utils.network_in_network(privnet_gw)) %}
