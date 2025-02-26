@@ -104,6 +104,7 @@ netconfig__interfaces: |-
 _netconfig__interfaces: |-
   {% filter from_yaml %}
   {% if pubnet_iface %}
+  {% set pubnet_net = '%s/%s' % (pubnet_host, pubnet_mask) %}
   {{ pubnet_iface }}:
     allow: auto
   {% if pubnet_hwaddr %}
@@ -114,19 +115,27 @@ _netconfig__interfaces: |-
   {% if pubnet_host %}
       inet:
         method: static
-        address: '{{ pubnet_host }}/{{ pubnet_mask }}'
-        gateway: '{{ pubnet_gw if pubnet_gw else None }}'
+        address: '{{ pubnet_net }}'
+        gateway: '{{ pubnet_gw or None }}'
+  {% if pubnet_gw and
+    not (pubnet_net | ansible.utils.network_in_network(pubnet_gw)) %}
+        pointopoint: '{{ pubnet_gw }}'
+  {% endif %}
+        pre-up: /sbin/ip addr flush dev $IFACE || true
   {% endif %}
 
   {% if pubnet6_host %}
       inet6:
         method: static
         address: '{{ pubnet6_host }}/{{ pubnet6_mask }}'
-        gateway: '{{ pubnet6_gw if pubnet6_gw else None }}'
+        gateway: '{{ pubnet6_gw or None }}'
+        autoconf: 0
+        accept_ra: 0
   {% endif %}
   {% endif %}
 
   {% if privnet_iface %}
+  {% set privnet_net = '%s/%s' % (privnet_host, privnet_mask) %}
   {{ privnet_iface }}:
     allow: auto
   {% if privnet_hwaddr %}
@@ -137,15 +146,22 @@ _netconfig__interfaces: |-
   {% if privnet_host %}
       inet:
         method: static
-        address: '{{ privnet_host }}/{{ privnet_mask }}'
-        gateway: '{{ privnet_gw if privnet_gw else None }}'
+        address: '{{ privnet_net }}'
+        gateway: '{{ privnet_gw or None }}'
+  {% if privnet_gw and
+    not (privnet_net | ansible.utils.network_in_network(privnet_gw)) %}
+        pointopoint: '{{ privnet_gw }}'
+  {% endif %}
+        pre-up: /sbin/ip addr flush dev $IFACE || true
   {% endif %}
 
   {% if privnet6_host %}
       inet6:
         method: static
         address: '{{ privnet6_host }}/{{ privnet6_mask }}'
-        gateway: '{{ privnet6_gw if privnet6_gw else None }}'
+        gateway: '{{ privnet6_gw or None}}'
+        autoconf: 0
+        accept_ra: 0
   {% endif %}
   {% endif %}
   {% endfilter %}
