@@ -35,3 +35,7 @@
       tags: users
       vars:
         users__force_update_password: true
+        # Do not remove users at this point, as we might be using a
+        # bootstrapping user.
+        users__remove_users: []
+        users__remove_groups: []
