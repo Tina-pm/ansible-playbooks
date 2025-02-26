@@ -90,7 +90,7 @@ groups:
           generic_summary: Filesystem almost full
           description: >-
             The {{ $labels.mountpoint }} filesystem in {{ $labels.instance }}
-            has less than 5% available space.
+            has less than 1% available space.
       - alert: FSFull
         expr: |  # noqa: yaml[line-length]
           instance:node_filesystem_avail_bytes_per_node_filesystem_size_bytes:ratio{
@@ -107,78 +107,6 @@ groups:
           description: >-
             The {{ $labels.mountpoint }} filesystem in {{ $labels.instance }}
             is full.
-
-      - alert: FSFullSoon
-        expr: |
-          predict_linear(
-            instance:node_filesystem_avail_bytes:sum{
-              job="node"
-            }[12h], 24 * 3600
-          ) <= 0
-        for: 5m
-        labels:
-          severity: info
-        annotations:
-          summary: >-
-            Filesystem {{ $labels.mountpoint }} in {{ $labels.instance }} will
-            fill soon
-          generic_summary: Filesystem full soon
-          description: >-
-            The {{ $labels.mountpoint }} filesystem in {{ $labels.instance }}
-            will be full in 24 hours at the current rate.
-      - alert: FSFullSoon
-        expr: |
-          predict_linear(
-            instance:node_filesystem_avail_bytes:sum{
-              job="node"
-            }[2h], 4 * 3600
-          ) <= 0
-        for: 30m
-        labels:
-          severity: warning
-        annotations:
-          summary: >-
-            Filesystem {{ $labels.mountpoint }} in {{ $labels.instance }} will
-            fill VERY soon
-          generic_summary: Filesystem full VERY soon
-          description: >-
-            The {{ $labels.mountpoint }} filesystem in {{ $labels.instance }}
-            will be full in 4 hours at the current rate.
-
-      - alert: MemFullSoon
-        expr: |  # noqa: yaml[line-length]
-          predict_linear(
-            instance:node_memory_MemUsed_bytes_per_node_memory_MemTotal_bytes:ratio{
-              job="node"
-            }[12h], 24 * 3600
-          ) * 100 > 99
-        for: 5m
-        labels:
-          severity: info
-        annotations:
-          summary: >-
-            Memory in {{ $labels.instance }} will fill in 24h
-          generic_summary: Memory full soon
-          description: >-
-            The memory usage in {{ $labels.instance }} in {{ $labels.instance }}
-            will reach 100% in 24 hours at the current rate.
-      - alert: MemFullSoon
-        expr: |  # noqa: yaml[line-length]
-          predict_linear(
-            instance:node_memory_MemUsed_bytes_per_node_memory_MemTotal_bytes:ratio{
-              job="node"
-            }[2h], 4 * 3600
-          ) * 100 > 99
-        for: 30m
-        labels:
-          severity: warning
-        annotations:
-          summary: >-
-            Memory in {{ $labels.instance }} will fill in 4h
-          generic_summary: Memory full VERY soon
-          description: >-
-            The memory usage in {{ $labels.instance }} in {{ $labels.instance }}
-            will reach 100% in 4 hours at the current rate.
 
       - alert: ProcessNearFDLimits
         expr: process_open_fds / process_max_fds * 100 > 80
