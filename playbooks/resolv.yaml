@@ -1,6 +1,6 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 
-# Playbook: Configure resolv.
+# Playbook: Configure the DNS resolver.
 ---
 - name: Configure resolv
   hosts: all
