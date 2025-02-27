@@ -17,7 +17,7 @@ pubnet_hwaddr: ~
 ### IPv4 configuration.
 pubnet_host: ~
 pubnet_mask: 24
-pubnet_gwidx: 1
+pubnet_gwidx: ~
 pubnet_gw: |-
   {{
     (
@@ -28,12 +28,13 @@ pubnet_gw: |-
     )
     if pubnet_host and pubnet_mask and pubnet_gwidx else None
   }}
+pubnet_routed_nets: []
 pubnet_config_override: ~
 
 ### IPv6 configuration.
 pubnet6_host: ~
 pubnet6_mask: 64
-pubnet6_gwidx: 1
+pubnet6_gwidx: ~
 pubnet6_gw: |-
   {{
     (
@@ -44,6 +45,7 @@ pubnet6_gw: |-
     )
     if pubnet6_host and pubnet6_mask and pubnet6_gwidx else None
   }}
+pubnet6_routed_nets: []
 pubnet6_config_override: ~
 
 ## Private interface configuration.
@@ -64,6 +66,7 @@ privnet_gw: |-
     )
     if privnet_host and privnet_mask and privnet_gwidx else None
   }}
+privnet_routed_nets: []
 privnet_config_override: ~
 
 ### IPv6 configuration.
@@ -80,6 +83,7 @@ privnet6_gw: |-
     )
     if privnet6_host and privnet6_mask and privnet6_gwidx else None
   }}
+privnet6_routed_nets: []
 privnet6_config_override: ~
 
 # Templates.
@@ -112,6 +116,7 @@ _netconfig__interfaces: |-
       address: '{{ pubnet_hwaddr }}'
   {% endif %}
     config:
+
   {% if pubnet_host %}
       inet:
         method: static
@@ -122,6 +127,16 @@ _netconfig__interfaces: |-
         pointopoint: '{{ pubnet_gw }}'
   {% endif %}
         pre-up: /sbin/ip addr flush dev $IFACE || true
+  {% if pubnet_routed_nets %}
+        up:
+  {% for net, gw in pubnet_routed_nets %}
+          - ip route add {{ net }} via {{ gw }} dev $IFACE
+  {% endfor %}
+        down:
+  {% for net, gw in pubnet_routed_nets %}
+          - ip route del {{ net }} via {{ gw }} dev $IFACE
+  {% endfor %}
+  {% endif %}
   {% endif %}
 
   {% if pubnet6_host %}
@@ -131,6 +146,16 @@ _netconfig__interfaces: |-
         gateway: '{{ pubnet6_gw or None }}'
         autoconf: 0
         accept_ra: 0
+  {% if pubnet6_routed_nets %}
+        up:
+  {% for net, gw in pubnet6_routed_nets %}
+          - ip route add {{ net }} via {{ gw }} dev $IFACE
+  {% endfor %}
+        down:
+  {% for net, gw in pubnet6_routed_nets %}
+          - ip route del {{ net }} via {{ gw }} dev $IFACE
+  {% endfor %}
+  {% endif %}
   {% endif %}
   {% endif %}
 
@@ -143,6 +168,7 @@ _netconfig__interfaces: |-
       address: '{{ privnet_hwaddr }}'
   {% endif %}
     config:
+
   {% if privnet_host %}
       inet:
         method: static
@@ -153,6 +179,16 @@ _netconfig__interfaces: |-
         pointopoint: '{{ privnet_gw }}'
   {% endif %}
         pre-up: /sbin/ip addr flush dev $IFACE || true
+  {% if privnet_routed_nets %}
+        up:
+  {% for net, gw in privnet_routed_nets %}
+          - ip route add {{ net }} via {{ gw }} dev $IFACE
+  {% endfor %}
+        down:
+  {% for net, gw in privnet_routed_nets %}
+          - ip route del {{ net }} via {{ gw }} dev $IFACE
+  {% endfor %}
+  {% endif %}
   {% endif %}
 
   {% if privnet6_host %}
@@ -162,6 +198,16 @@ _netconfig__interfaces: |-
         gateway: '{{ privnet6_gw or None}}'
         autoconf: 0
         accept_ra: 0
+  {% if privnet6_routed_nets %}
+        up:
+  {% for net, gw in privnet6_routed_nets %}
+          - ip route add {{ net }} via {{ gw }} dev $IFACE
+  {% endfor %}
+        down:
+  {% for net, gw in privnet6_routed_nets %}
+          - ip route del {{ net }} via {{ gw }} dev $IFACE
+  {% endfor %}
+  {% endif %}
   {% endif %}
   {% endif %}
   {% endfilter %}
