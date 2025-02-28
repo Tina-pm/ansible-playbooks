@@ -6,9 +6,11 @@
   hosts: loki_servers
   become: true
   tasks:
-    - name: Install loki
+    - name: Install required packages
       ansible.builtin.package:
-        name: loki
+        name:
+          - loki
+          - logcli
         state: present
 
     - name: Create '{{ loki__storage_dir }}'
