@@ -227,6 +227,16 @@ prometheus__federated_prometheus: |-
     ) | sum(start=[])
   }}
 
+# Playbook: promtail
+# -----------------------------------------------------------------------------
+
+promtail__add_to_groups: |-
+  {{
+    query('vars',
+      *(query('varnames', '^promtail__add_to_groups__.*') | sort)
+    ) | sum(start=[])
+  }}
+
 # Role: glauth
 # -----------------------------------------------------------------------------
 

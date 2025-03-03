@@ -1,0 +1,14 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+server:
+  http_listen_port: {{ promtail__listen_port }}
+  grpc_listen_port: 0
+
+positions:
+  filename: {{ promtail__storage_dir + '/positions.yaml' | to_yaml | trim }}
+
+clients:
+  {{ promtail__clients | to_nice_yaml(indent=2) | indent(2) }}
+
+scrape_configs:
+  {{ promtail__scrape_configs | to_nice_yaml(indent=2) | indent(2) }}
