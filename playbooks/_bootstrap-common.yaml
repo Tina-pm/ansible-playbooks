@@ -1,41 +1,34 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 
-# Playbook: Common bootstrapping roles.
+# Playbook: common bootstrapping roles.
 #
-# * Users role: Set up user accounts and home directories.
-# * Base-setup role: Set up hostname, mail forwarding, apt repositories, sshd,
-#   and sudo. Disable `cloud-init` if present to prevent it from overwriting
+# * Net: configure network interfaces.
+# * Resolv: configure the DNS resolver.
+# * Users: set up user accounts and home directories.
+# * Base-setup: set up hostname, mail forwarding, apt repositories, sshd, and
+#   sudo. Disable `cloud-init` if present to prevent it from overwriting.
 #   configurations.
-# * Net role: Configure network interfaces.
 ---
-- name: Run bootstrapping roles
-  hosts: '{{ target_hosts | d("all") }}'
-  become: true
+- name: Configure network interfaces
+  import_playbook: ./net.yaml
+
+- name: Configure the DNS resolver
+  import_playbook: ./resolv.yaml
   vars:
-    play_net_enable: '{{ net__enable | d(false) }}'
-    play_resolv_enable: '{{ resolv__enable | d(false) }}'
     simple_bind__enable: false  # Do not expect a local name server yet.
-  roles:
-    - role: tina_pm.common.net
-      when: play_net_enable
-      tags: net
 
-    - role: tina_pm.third_party.resolv
-      when: play_resolv_enable
-      tags: resolv
+- name: Set up host base configuration
+  import_playbook: ./base_setup.yaml
+  vars:
+    # Do not disable this until users are fully set-up.
+    base_setup__sshd_password_auth_allowed:
+    base_setup__sshd_root_login_allowed:
 
-    - role: tina_pm.common.base_setup
-      tags: base_setup
-      vars:
-        # Do not disable this until users are fully set-up.
-        base_setup__sshd_password_auth_allowed:
-        base_setup__sshd_root_login_allowed:
-
-    - role: tina_pm.common.users
-      tags: users
-      vars:
-        users__force_update_password: true
-        # Do not remove users at this point, as we might be using a
-        # bootstrapping user.
-        users__remove_users: []
-        users__remove_groups: []
+- name: Set up user accounts and home directories
+  import_playbook: ./users.yaml
+  vars:
+    users__force_update_password: true
+    # Do not remove users at this point, as we might be using a
+    # bootstrapping user.
+    users__remove_users: []
+    users__remove_groups: []
