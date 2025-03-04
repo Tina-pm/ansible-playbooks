@@ -16,10 +16,7 @@
     group: bind
     mode: '0644'
     force: true
-  with_fileglob:
-    - '{{ bind_config__conf_files }}'
-  loop_control:
-    label: '{{ item | basename }}'
+  with_items: '{{ bind_config__conf_files }}'
   notify:
     - _tina_validate_bind9_conf
     - _tina_reload_bind9
