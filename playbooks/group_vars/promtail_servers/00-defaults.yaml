@@ -23,8 +23,10 @@ promtail__clients: |
   {{- res -}}
 
 promtail__scrape_configs: |-
-  {{ query('vars', *(query('varnames', '^promtail__scrape_config__.*')
-     | select | sort)) }}
+  {{
+    query('vars', *(query('varnames', '^promtail__scrape_config__.*') | sort)) |
+    select
+  }}
 promtail__scrape_config__varlogs:
   job_name: varlogs
   static_configs:
