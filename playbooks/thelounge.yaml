@@ -1,0 +1,7 @@
+- name: Install and configure TheLounge
+  hosts: thelounge_servers
+  become: true
+  roles:
+    - role: tina_pm.common.thelounge
+      when: thelounge__enable
+      tags: [thelounge]
