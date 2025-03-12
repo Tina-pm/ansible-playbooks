@@ -43,9 +43,9 @@ vm_params: {}
 # Discover custom configurations using var prefixes
 # (e.g. vm_volume__root).
 vm_volumes: |-
-  {{ query('vars', *(query('varnames', '^vm_volume__.*') | select | sort)) }}
+  {{ query('vars', *(query('varnames', '^vm_volume__.*') | sort)) | select }}
 vm_interfaces: |-
-  {{ query('vars', *(query('varnames', '^vm_interface__.*') | select | sort)) }}
+  {{ query('vars', *(query('varnames', '^vm_interface__.*') | sort)) | select }}
 
 vm_image_variant: genericcloud
 # Uses variables computed by 25-apt-calculated.yaml.
