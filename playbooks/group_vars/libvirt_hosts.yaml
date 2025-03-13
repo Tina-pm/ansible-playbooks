@@ -22,12 +22,9 @@ users__create_groups__libvirt:
     system: true
 
 apt__packages_to_install__libvirt:
-  - guestfs-tools
-  - libvirt-daemon
   - prometheus-libvirt-exporter
   # required by community.libvirt.virt
   - python3-libvirt
-  - virtinst
 apt__services_to_enable__libvirt:
   - prometheus-libvirt-exporter
 apt__services_to_start__libvirt:

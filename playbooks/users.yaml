@@ -1,7 +1,7 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
 - name: Set up user accounts and home directories
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   gather_facts: true
   become: true
   roles:

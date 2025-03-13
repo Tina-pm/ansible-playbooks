@@ -3,7 +3,7 @@
 # Playbook: Set up host base configuration.
 ---
 - name: Set up host base configuration
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
   roles:
     - role: tina_pm.common.base_setup
