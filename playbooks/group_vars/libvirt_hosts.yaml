@@ -11,9 +11,10 @@ libvirt_hosts__masquerade: false
 libvirt_hosts__forwarding_ext_ifaces: []
 libvirt_hosts__forwarding_int_ifaces: []
 
-# Needed for network set-up.
-base_setup__pkg_install__libvirt:
+# Needed for network set-up during host's bootstrap.
+bootstrap__install_packages__libvirt:
   - bridge-utils
+base_setup__pkg_install__libvirt: '{{ bootstrap__install_packages__libvirt }}'
 
 users__admin_groups__libvirt:
   - libvirt
