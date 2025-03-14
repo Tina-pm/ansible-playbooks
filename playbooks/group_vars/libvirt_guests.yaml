@@ -33,7 +33,7 @@ bootstrap__install_packages__libvirt:
   - qemu-guest-agent  # Needed for ansible/libvirt connection.
 
 # VM definition parameters.
-vm_name: '{{ inventory_hostname }}'
+vm_name: '{{ inventory_hostname_short }}'
 vm_default_params:
   memory_mb: 1024
   vcpus: 1
@@ -54,27 +54,30 @@ vm_image_url:
     apt__distro_ver }}-{{ vm_image_variant }}-amd64.qcow2
 
 vm_volume__00_root:
-  dev: /dev/vg0/vm-{{ inventory_hostname }}-root
+  dev: /dev/vg0/vm-{{ inventory_hostname_short }}-root
   target: vda
   type: block
   size: 10G
   format: raw
   mount: ~  # Partitioned device.
 
+_host_iface_prefix: |-
+  {% set _len = ('vm-%s-en0' % vm_name) | length %}
+  {{ 'vm-%s' % (vm_name if _len <= 15 else vm_name[:15 - _len]) }}
 vm_interface__00_pubbr:
   type: bridge
   mac: '{{ pubnet_hwaddr }}'
   source:
     dev: vmbr0
   target:
-    dev: vm-{{ vm_name }}-en0
+    dev: '{{ _host_iface_prefix }}-en0'
 vm_interface__01_privbr:
   type: bridge
   mac: '{{ privnet_hwaddr }}'
   source:
     dev: vmbr1
   target:
-    dev: vm-{{ vm_name }}-en1
+    dev: '{{ _host_iface_prefix }}-en1'
 
 # Construct complete VM definition.
 libvirt__vm_def: |-

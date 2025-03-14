@@ -3,6 +3,20 @@
 # SSH public keys allowed to log in to the initramfs.
 dropbear_initramfs__authorized_keys: ~
 
+# Boot-time network configuration, as accepted by the kernel command line `ip=`
+# parameter. For details, see
+# https://www.kernel.org/doc/Documentation/filesystems/nfs/nfsroot.txt
+#
+# Format:
+#   <client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>:
+#   <dns0-ip>:<dns1-ip>:<ntp0-ip>
+#
+dropbear_initramfs__ipconfig: dhcp
+
 # Path to the authorized_keys file.
 dropbear_initramfs__authorized_keys_file:
   /etc/dropbear/initramfs/authorized_keys
+
+# Path to the initramfs-tools configuration file.
+dropbear_initramfs__conf_file:
+  /etc/initramfs-tools/initramfs.conf
