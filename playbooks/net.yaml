@@ -4,6 +4,7 @@
 ---
 - name: Configure network interfaces
   hosts: '{{ target_hosts | d("all") }}'
+  become: true
   roles:
     - role: tina_pm.common.net
       when: net__enable
