@@ -19,3 +19,12 @@
     manage_dir: false
     exclusive: true
   notify: _tina_update_initramfs
+
+- name: Set boot-time network parameters
+  ansible.builtin.lineinfile:
+    dest: '{{ dropbear_initramfs__conf_file }}'
+    line: IP={{ dropbear_initramfs__ipconfig }}
+    regexp: '^IP[ =]'
+    state: present
+  notify: _tina_update_initramfs
+  when: dropbear_initramfs__ipconfig
