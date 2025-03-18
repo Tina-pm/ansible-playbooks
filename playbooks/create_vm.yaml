@@ -29,7 +29,7 @@
           - not _invalid_hosts
         quiet: true
         fail_msg: |-
-          The VM hosts should be included in the libvirt_guests group:
+          The target hosts should be included in the libvirt_guests group:
           {{ _invalid_hosts }}.
       run_once: true
 
