@@ -5,6 +5,7 @@
 - name: Set up host base configuration
   hosts: '{{ target_hosts | d("all") }}'
   become: true
+  gather_facts: true
   roles:
     - role: tina_pm.common.base_setup
       tags: base_setup

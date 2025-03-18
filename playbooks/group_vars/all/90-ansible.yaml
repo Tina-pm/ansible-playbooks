@@ -4,6 +4,9 @@
 # Ansible configuration.
 # =============================================================================
 
+# Use FQDNs for connecting, delegate connection details to SSH configuration.
+ansible_host: '{{ host_fqdn }}'
+
 # Override interpreter location according to Debian default configurations.
 ansible_python_interpreter: |-
   {{
