@@ -3,10 +3,14 @@
 # Playbook: Create VM, install needed packages for bootstrap, and call
 # `_boostrap-common` playbook.
 #
+# Control variables (set with `--extra-vars=...`):
+#   target_hosts: Comma-separated list of virtual host(s) to install (required).
+#   force_reinstall: If true, re-create host definitions.
+#
 # Note: Volume creation, formatting, and mounting is not yet implemented.
 ---
 - name: Validate play parameters
-  hosts: all
+  hosts: '{{ target_hosts | d("nonexistent") }}'
   gather_facts: false
   vars:
     _vm_hosts: |-
@@ -16,32 +20,42 @@
         map('extract', hostvars, 'vm_host') |
         unique
       }}
-    _missing_hosts: |-
-      {{ _vm_hosts | difference(ansible_play_hosts_all) }}
+    _invalid_hosts: |-
+      {{ ansible_play_hosts_all | difference(groups['libvirt_guests']) }}
   tasks:
-    - name: Check VM hosts are included in execution
+    - name: Check target hosts are in libvirt_guests group
       ansible.builtin.assert:
         that:
-          - not _missing_hosts
+          - not _invalid_hosts
         quiet: true
         fail_msg: |-
-          The VM hosts should be included in the play: {{ _missing_hosts }}.
+          The target hosts should be included in the libvirt_guests group:
+          {{ _invalid_hosts }}.
       run_once: true
 
     - name: Create transient VM hosts group
       ansible.builtin.add_host:
         name: '{{ item }}'
         group: vm_hosts
-        # Save playbook targets, not limited by play `hosts` param.
-        _limit_hosts: '{{ ansible_play_hosts_all }}'
+        # Save playbook targets as a list of hosts
+        _target_hosts: '{{ ansible_play_hosts_all }}'
       loop: '{{ _vm_hosts }}'
       check_mode: false
       changed_when: false
 
 - name: Prepare host
   hosts: vm_hosts
+  gather_facts: true
   become: true
   tasks:
+    - name: Install dependencies
+      ansible.builtin.package:
+        state: present
+        name:
+          - guestfs-tools
+          - python3-libvirt
+          - virtinst
+
     - name: Configure VM host, storage pools, and networks
       ansible.builtin.include_role:
         name: tina_pm.third_party.libvirt_host
@@ -76,16 +90,40 @@
   hosts: vm_hosts
   become: true
   vars:
-    _all_guests: |-
-      {{ libvirt__local_guests | intersect(_limit_hosts) }}
-    _new_guests: |-
-      {{ _all_guests | difference(_defined_vms.list_vms) }}
+    _existing_guests: |-
+      {{ _target_hosts | intersect(_defined_vms.list_vms) }}
+    _force: |-
+      {{ force_reinstall | d() | bool }}
   tasks:
+    - name: Stop if hosts already exist
+      ansible.builtin.assert:
+        that:
+          - _force or not _existing_guests
+        quiet: true
+        fail_msg: |-
+          The VM hosts already exist: {{ _existing_guests }}.
+
+    - name: Stop existing host for reinstall
+      community.libvirt.virt:
+        name: '{{ item }}'
+        state: shutdown
+      loop: '{{ _existing_guests }}'
+      when:
+        _existing_guests and _force
+
+    - name: Undefine existing host for reinstall
+      community.libvirt.virt:
+        name: '{{ item }}'
+        command: undefine
+      loop: '{{ _existing_guests }}'
+      when:
+        _existing_guests and _force
+
     - name: Define guest domains and volumes
       ansible.builtin.include_role:
         name: tina_pm.third_party.libvirt_vm
       vars:
-        libvirt__define_guests: '{{ _new_guests }}'
+        libvirt__define_guests: '{{ _target_hosts }}'
 
     - name: Adjust guest domain XML definition to use `block` devices
       # There is a bug in libvirt's AppArmor support that prevents QEMU from
@@ -109,7 +147,7 @@
           {% endwith %}
       loop: |-
         {{
-          _all_guests |
+          _target_hosts |
           map('extract', libvirt__guest_defs) |
           subelements('volumes', {'skip_missing': True}) |
           selectattr('1.type', 'equalto', 'volume')
@@ -122,7 +160,7 @@
       community.libvirt.virt:
         name: '{{ item }}'
         state: shutdown
-      loop: '{{ _new_guests }}'
+      loop: '{{ _target_hosts }}'
 
     # TODO(Tina): Implement volume formatting and mounting.
 
@@ -132,17 +170,17 @@
           virt-customize -d {{ item }} --install {{
             ','.join(hostvars[item].bootstrap__install_packages)
           }}
-      loop: '{{ _new_guests }}'
+      loop: '{{ _target_hosts }}'
       changed_when: true
 
     - name: Start VM domains
       community.libvirt.virt:
         state: running
         name: '{{ item }}'
-      loop: '{{ _all_guests }}'
+      loop: '{{ _target_hosts }}'
 
 - name: Adjust VM partitions and filesystems
-  hosts: libvirt_guests
+  hosts: '{{ target_hosts | d("nonexistent") }}'
   gather_facts: false
   become: true
   tasks:
@@ -172,5 +210,3 @@
 
 - name: Run common bootstrapping roles
   ansible.builtin.import_playbook: _bootstrap-common.yaml
-  vars:
-    target_hosts: libvirt_guests
