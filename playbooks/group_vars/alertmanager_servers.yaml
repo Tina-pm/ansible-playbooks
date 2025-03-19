@@ -15,9 +15,9 @@ ferm__services__alertmanager:
   alertmanager:
     dport: 9093
     proto: tcp
-    saddr: '{{ internal_networks }}'
+    saddr: '{{ trusted_networks }}'
 
   alertmanager-gossip:
     dport: 9094
     proto: tcp
-    saddr: '{{ internal_networks }}'
+    saddr: '{{ trusted_networks }}'
