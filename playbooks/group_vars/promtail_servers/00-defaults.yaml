@@ -7,7 +7,7 @@ promtail__storage_dir: /var/lib/promtail
 # If true, install ferm configuration file.
 promtail__install_ferm_svc: '{{ ferm__enable | bool }}'
 # Optionally limit access to a list of IP addresses.
-promtail__ferm_allow_from: '{{ internal_networks }}'
+promtail__ferm_allow_from: '{{ trusted_networks }}'
 
 # List of Loki instances to push logs to.
 promtail__client_urls: []

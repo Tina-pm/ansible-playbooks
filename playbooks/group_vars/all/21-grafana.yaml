@@ -6,7 +6,7 @@
 grafana__enable: false
 
 grafana__install_ferm_svc: '{{ ferm__enable | bool }}'
-grafana__ferm_allow_from: '{{ internal_networks }}'
+grafana__ferm_allow_from: '{{ trusted_networks }}'
 
 grafana__server__domain: monitoring.{{ domain_name }}
 grafana__smtp__from_address: grafana@{{ host_fqdn }}

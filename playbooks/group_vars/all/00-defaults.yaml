@@ -14,16 +14,25 @@ host_name: '{{ inventory_hostname_short }}'
 host_fqdn: '{{ inventory_hostname_short }}.{{ inventory_domain_name }}'
 
 # General network parameters.
+# -----------------------------------------------------------------------------
 nameservers:
   - 8.8.8.8
 
+# Networks directly connected to this host.
 local_networks: []
+# Private/internal, not globally routable networks.
 internal_networks: []
+# Link-local addressed networks.
 link_local_networks:
   - 169.254/16
   - 'fe80::/10'
 
+# Trusted private networks.
+# -----------------------------------------------------------------------------
+trusted_networks: '{{ internal_networks }}'
+
 # Host environments.
+# -----------------------------------------------------------------------------
 envs:
   - prod
   - test
@@ -99,7 +108,7 @@ resolv_domain: '{{ domain_name | d(omit) }}'
 
 node_exporter__enable: true
 node_exporter__install_ferm_svc: '{{ ferm__enable | bool }}'
-node_exporter__allow_from: '{{ internal_networks }}'
+node_exporter__allow_from: '{{ trusted_networks }}'
 node_exporter__listen_addr: ''
 node_exporter__listen_port: 9100
 node_exporter__disk_ignored_devs:
@@ -117,7 +126,7 @@ node_exporter__extra_args: |
 # -----------------------------------------------------------------------------
 
 blackbox_exporter__enable: false
-blackbox_exporter__allow_from: '{{ internal_networks }}'
+blackbox_exporter__allow_from: '{{ trusted_networks }}'
 blackbox_exporter__install_ferm_svc: '{{ ferm__enable | bool }}'
 
 # Role: mtail

@@ -8,5 +8,5 @@ loki__storage_dir: /var/lib/loki
 # If true, install ferm configuration file.
 loki__install_ferm_svc: '{{ ferm__enable | bool }}'
 # Optionally limit access to a list of IP addresses.
-loki__http_ferm_allow_from: '{{ internal_networks }}'
-loki__grpc_ferm_allow_from: '{{ internal_networks }}'
+loki__http_ferm_allow_from: '{{ trusted_networks }}'
+loki__grpc_ferm_allow_from: '{{ trusted_networks }}'
