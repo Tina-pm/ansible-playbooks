@@ -4,12 +4,6 @@
 # Reusable defaults for libvirt guests.
 # =============================================================================
 
-# Shortcut to access host's configuration values.
-vm_hostvars: '{{ hostvars[vm_host] }}'
-# XXX: Be careful not to use this in variables that are retrieved from the host
-# (i.e.: all VM definitions), as they create circular dependencies that cannot
-# be resolved.
-
 # Connect using QEMU guest agent.
 libvirt__vm_use_qemu_connection: true
 ansible_connection: |-
@@ -20,9 +14,9 @@ ansible_connection: |-
   }}
 ansible_libvirt_uri: |-
   qemu+ssh://{{
-    vm_hostvars.get('ansible_ssh_host') or
-    vm_hostvars.get('ansible_host') or
-    vm_hostvars.get('inventory_hostname')
+    hostvars[vm_host].get('ansible_ssh_host') or
+    hostvars[vm_host].get('ansible_host') or
+    hostvars[vm_host].get('inventory_hostname')
   }}/system
 ansible_host: |-
   {{ vm_name if libvirt__vm_use_qemu_connection | bool else host_fqdn }}
