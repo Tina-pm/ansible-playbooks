@@ -3,20 +3,17 @@
 # =============================================================================
 # Common bootstrapping roles.
 #
-# * Net: configure network interfaces.
-# * Resolv: configure the DNS resolver.
+# * Networking: apply networking configuration.
 # * Users: set up user accounts and home directories.
 # * Base-setup: set up hostname, mail forwarding, apt repositories, sshd, and
 #   sudo. Disable `cloud-init` if present to prevent it from overwriting.
 #   configurations.
 # =============================================================================
 
-- name: Configure network interfaces
-  import_playbook: ./net.yaml
-
-- name: Configure the DNS resolver
-  import_playbook: ./resolv.yaml
+- name: Apply networking configuration
+  import_playbook: ./networking.yaml
   vars:
+    ferm__enable: false  # Do not configure the firewall yet.
     simple_bind__enable: false  # Do not expect a local name server yet.
 
 - name: Set up host base configuration

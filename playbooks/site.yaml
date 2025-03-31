@@ -13,9 +13,6 @@
 - name: Manage remote disk unlocking with dropbear-initramfs
   import_playbook: ./dropbear_initramfs.yaml
 
-- name: Install and configure tinc VPN daemon
-  import_playbook: ./tinc.yaml
-
 - name: Configure APT and install required packages
   import_playbook: ./apt.yaml
 
