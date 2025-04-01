@@ -3,6 +3,7 @@
 - name: Set up backups
   hosts: '{{ target_hosts | d("libvirt_hosts") }}'
   become: true
+  gather_facts: false
   tasks:
     - name: Install needed packages
       ansible.builtin.package:

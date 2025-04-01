@@ -5,7 +5,7 @@
 - name: Install and configure promtail
   hosts: promtail_servers
   become: true
-
+  gather_facts: false
   tasks:
     - name: Install promtail
       ansible.builtin.package:
