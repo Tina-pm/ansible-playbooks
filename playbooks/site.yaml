@@ -1,5 +1,9 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
+# =============================================================================
+# Run all "safe" playbooks, excluding core networking changes.
+# =============================================================================
+
 - name: Set up user accounts and home directories
   import_playbook: ./users.yaml
 
@@ -9,38 +13,38 @@
 - name: Manage remote disk unlocking with dropbear-initramfs
   import_playbook: ./dropbear_initramfs.yaml
 
-- name: Install and configure VPN
+- name: Install and configure tinc VPN daemon
   import_playbook: ./tinc.yaml
 
 - name: Configure APT and install required packages
   import_playbook: ./apt.yaml
 
-- name: NTP time synchronisation
+- name: Set up network time syncronization
   import_playbook: ./ntp.yaml
 
-- name: Per-host firewall with `iptables` and `ferm`
+- name: Install and configure Ferm firewall manager
   import_playbook: ./ferm.yaml
 
-- name: Automatic IP blocking with `fail2ban`
+- name: Install and configure fail2ban automatic IP address banner
   import_playbook: ./fail2ban.yaml
 
-- name: Simple DNS server with `bind`
+- name: Install and configure Bind9 DNS server
   import_playbook: ./simple_bind.yaml
 
-- name: Complex DNS server configuration with `bind`
+- name: Install Bind9 and deploy raw configuration files
   import_playbook: ./bind_config.yaml
 
-- name: DNS resolution configuration
+- name: Configure the DNS resolver
   import_playbook: ./resolv.yaml
 
-- name: Setup apache2 server and configurations
+- name: Install and configure Apache web server
   import_playbook: ./apache2.yaml
 
-- name: Prometheus server, `node_exporter`, `mtail` and `blackbox exporter`
+- name: Install and configure monitoring stack components
   import_playbook: ./monitoring.yaml
 
-- name: LDAP server
+- name: Install and configure GLAuth fast and lightweight LDAP server
   import_playbook: ./glauth.yaml
 
-- name: The Lounge
+- name: Install and configure TheLounge web interface and bouncer for IRC
   import_playbook: ./thelounge.yaml

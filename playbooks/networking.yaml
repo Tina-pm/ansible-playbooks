@@ -1,16 +1,18 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: apply networking configuration
-#
-# * Configure network interfaces.
-# * Configure the DNS resolver.
-# * Configure the Ferm firewall.
 ---
+# =============================================================================
+# Apply core networking configuration:
+#
+#  * Configure network interfaces.
+#  * Configure the DNS resolver.
+#  * Install and configure ferm firewall manager.
+# =============================================================================
+
 - name: Configure network interfaces
   import_playbook: ./net.yaml
 
 - name: Configure the DNS resolver
   import_playbook: ./resolv.yaml
 
-- name: Configure the Ferm firewall
+- name: Install and configure Ferm firewall manager
   import_playbook: ./ferm.yaml

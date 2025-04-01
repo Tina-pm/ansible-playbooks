@@ -1,8 +1,10 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Configure loki.
 ---
-- name: Configure loki
+# =============================================================================
+# Install and configure loki log collector and analyser.
+# =============================================================================
+
+- name: Install and configure loki log collector and analyser
   hosts: loki_servers
   become: true
   gather_facts: false

@@ -1,9 +1,14 @@
+# vim:ts=2:sw=2:et:ai:sts=2
 ---
-- name: Install and configure TheLounge
+# =============================================================================
+# Install and configure TheLounge web interface and bouncer for IRC.
+# =============================================================================
+
+- name: Install and configure TheLounge web interface and bouncer for IRC
   hosts: '{{ target_hosts | d("thelounge_servers") }}'
   become: true
   gather_facts: false
   roles:
     - role: tina_pm.common.thelounge
       when: thelounge__enable
-      tags: [thelounge]
+      tags: thelounge

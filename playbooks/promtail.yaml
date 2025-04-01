@@ -1,8 +1,10 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Install and configure promtail agents.
 ---
-- name: Install and configure promtail
+# =============================================================================
+# Install and configure promtail log collection agent.
+# =============================================================================
+
+- name: Install and configure promtail log collection agent
   hosts: promtail_servers
   become: true
   gather_facts: false
