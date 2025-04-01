@@ -4,7 +4,7 @@
 # also configure /etc/apt according to role settings.
 ---
 - name: Upgrade packages
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
   roles:
     - role: tina_pm.common.apt

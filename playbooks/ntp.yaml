@@ -3,7 +3,7 @@
 # Playbook: Set up network time syncronization.
 ---
 - name: Set up network time syncronization
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   gather_facts: true
   become: true
   roles:

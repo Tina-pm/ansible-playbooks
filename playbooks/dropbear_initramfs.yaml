@@ -3,7 +3,7 @@
 # Playbook: Manage remote disk unlocking with dropbear-initramfs.
 ---
 - name: Manage remote disk unlocking with dropbear-initramfs
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
   gather_facts: false
   roles:

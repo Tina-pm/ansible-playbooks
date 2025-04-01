@@ -3,7 +3,7 @@
 # Playbook: Automatic IP blocking with `fail2ban`.
 ---
 - name: Automatic IP blocking with `fail2ban`
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   gather_facts: false
   become: true
   roles:

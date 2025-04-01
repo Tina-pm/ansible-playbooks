@@ -3,7 +3,7 @@
 # Playbook: Install bind9 server.
 ---
 - name: Install bind9 server
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   gather_facts: false
   become: true
   roles:

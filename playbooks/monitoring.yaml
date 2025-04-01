@@ -4,7 +4,7 @@
 # exporter`.
 ---
 - name: Set up monitoring stack
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   gather_facts: false
   become: true
 

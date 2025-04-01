@@ -1,7 +1,7 @@
 # Playbook: Set up backups.
 ---
 - name: Set up backups
-  hosts: libvirt_hosts
+  hosts: '{{ target_hosts | d("libvirt_hosts") }}'
   become: true
   tasks:
     - name: Install needed packages

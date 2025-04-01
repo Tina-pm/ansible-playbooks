@@ -3,7 +3,7 @@
 # Playbook: Install and manage Bind9 configuration.
 ---
 - name: Install and manage Bind9 configuration
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
   gather_facts: false
   roles:

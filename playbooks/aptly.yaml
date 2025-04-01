@@ -3,7 +3,7 @@
 # Playbook: Install and configure aptly.
 ---
 - name: Install and configure aptly
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
   gather_facts: false
   roles:

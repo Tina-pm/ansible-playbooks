@@ -3,7 +3,7 @@
 # Playbook: Setup apache2 server and configurations.
 ---
 - name: Setup apache2 server and configurations
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   gather_facts: false
   become: true
   roles:

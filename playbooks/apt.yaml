@@ -4,7 +4,7 @@
 # and install required packages.
 ---
 - name: Configure APT and install required packages
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
   gather_facts: true
   roles:

@@ -4,7 +4,7 @@
 # playbook.
 ---
 - name: Install packages
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   gather_facts: false
   strategy: linear
   become: true
@@ -32,5 +32,3 @@
 
 - name: Run common bootstrapping roles
   ansible.builtin.import_playbook: _bootstrap-common.yaml
-  vars:
-    target_hosts: all
