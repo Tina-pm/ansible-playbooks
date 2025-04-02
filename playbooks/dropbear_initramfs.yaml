@@ -1,9 +1,11 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Manage remote disk unlocking with dropbear-initramfs.
 ---
+# =============================================================================
+# Manage remote disk unlocking with dropbear-initramfs.
+# =============================================================================
+
 - name: Manage remote disk unlocking with dropbear-initramfs
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
   gather_facts: false
   roles:

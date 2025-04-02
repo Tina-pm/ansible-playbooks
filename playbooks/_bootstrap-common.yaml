@@ -1,6 +1,7 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: common bootstrapping roles.
+---
+# =============================================================================
+# Common bootstrapping roles.
 #
 # * Net: configure network interfaces.
 # * Resolv: configure the DNS resolver.
@@ -8,7 +9,8 @@
 # * Base-setup: set up hostname, mail forwarding, apt repositories, sshd, and
 #   sudo. Disable `cloud-init` if present to prevent it from overwriting.
 #   configurations.
----
+# =============================================================================
+
 - name: Configure network interfaces
   import_playbook: ./net.yaml
 

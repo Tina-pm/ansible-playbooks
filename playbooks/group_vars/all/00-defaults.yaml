@@ -44,47 +44,14 @@ env: |-
     ) | first
   }}
 
-# Playbook: bootstrap*
-# -----------------------------------------------------------------------------
-
-# Essential packages before ansible can run.
-bootstrap__install_packages__common:
-  - python3
-  - python3-apt
+# =============================================================================
+# Per-playbook/role defaults
+# =============================================================================
 
 # Role: aptly
 # -----------------------------------------------------------------------------
 
 aptly__enable: false
-
-# Role: net
-# -----------------------------------------------------------------------------
-
-net__enable: false
-
-# Role: ntp
-# -----------------------------------------------------------------------------
-
-ntp_enabled: true
-ntp_timezone: Etc/UTC
-ntp_manage_config: true
-
-# Role: ferm
-# -----------------------------------------------------------------------------
-
-ferm__enable: false
-
-# Role: fail2ban
-# -----------------------------------------------------------------------------
-
-fail2ban__enable: true
-fail2ban__install_ferm_svc: '{{ ferm__enable | bool }}'
-
-# Role: simple_bind
-# -----------------------------------------------------------------------------
-
-simple_bind__enable: false
-simple_bind__install_ferm_svc: '{{ ferm__enable | bool }}'
 
 # Role: bind_config
 # -----------------------------------------------------------------------------
@@ -93,15 +60,52 @@ bind_config__enable: false
 bind_config__install_ferm_svc: '{{ ferm__enable | bool }}'
 bind_config__conf_files: '{{ inventory_dir }}/bind/*'
 
-# Role: resolv
+# Role: blackbox_exporter
 # -----------------------------------------------------------------------------
 
-resolv__enable: false
-resolv_nameservers: |-
-  {{
-    (['127.0.0.1'] if simple_bind__enable else []) + nameservers
-  }}
-resolv_domain: '{{ domain_name | d(omit) }}'
+blackbox_exporter__enable: false
+blackbox_exporter__allow_from: '{{ trusted_networks }}'
+blackbox_exporter__install_ferm_svc: '{{ ferm__enable | bool }}'
+
+# Playbook: bootstrap / create_vm
+# -----------------------------------------------------------------------------
+
+# Essential packages before ansible can run.
+bootstrap__install_packages__common:
+  - python3
+  - python3-apt
+
+# Not yet a role: dehydrated
+# -----------------------------------------------------------------------------
+dehydrated__enable: false
+dehydrated__cert_path: /var/lib/dehydrated/certs
+
+# Role: fail2ban
+# -----------------------------------------------------------------------------
+
+fail2ban__enable: true
+fail2ban__install_ferm_svc: '{{ ferm__enable | bool }}'
+
+# Role: ferm
+# -----------------------------------------------------------------------------
+
+ferm__enable: false
+
+# Role: glauth
+# -----------------------------------------------------------------------------
+
+glauth__enable: false
+
+# Role: mtail
+# -----------------------------------------------------------------------------
+
+mtail__enable: false
+mtail__install_ferm_svc: '{{ ferm__enable | bool }}'
+
+# Role: net
+# -----------------------------------------------------------------------------
+
+net__enable: false
 
 # Role: node_exporter
 # -----------------------------------------------------------------------------
@@ -122,23 +126,28 @@ node_exporter__extra_args: |
   --collector.cpu.info
   {% endif %}
 
-# Role: blackbox_exporter
+# Role: ntp
 # -----------------------------------------------------------------------------
 
-blackbox_exporter__enable: false
-blackbox_exporter__allow_from: '{{ trusted_networks }}'
-blackbox_exporter__install_ferm_svc: '{{ ferm__enable | bool }}'
+ntp_enabled: true
+ntp_timezone: Etc/UTC
+ntp_manage_config: true
 
-# Role: mtail
+# Role: resolv
 # -----------------------------------------------------------------------------
 
-mtail__enable: false
-mtail__install_ferm_svc: '{{ ferm__enable | bool }}'
+resolv__enable: false
+resolv_nameservers: |-
+  {{
+    (['127.0.0.1'] if simple_bind__enable else []) + nameservers
+  }}
+resolv_domain: '{{ domain_name | d(omit) }}'
 
-# Role: glauth
+# Role: simple_bind
 # -----------------------------------------------------------------------------
 
-glauth__enable: false
+simple_bind__enable: false
+simple_bind__install_ferm_svc: '{{ ferm__enable | bool }}'
 
 # Role: tinc
 # -----------------------------------------------------------------------------
@@ -146,8 +155,3 @@ glauth__enable: false
 tinc__netname: tinc
 tinc__install_ferm_svc: '{{ ferm__enable | bool }}'
 tinc__local_cache: '{{ inventory_dir }}/fetch'
-
-# Not yet a role: dehydrated
-# -----------------------------------------------------------------------------
-dehydrated__enable: false
-dehydrated__cert_path: /var/lib/dehydrated/certs

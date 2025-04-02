@@ -1,13 +1,14 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Install needed packages for bootstrap, and call `_boostrap-common`
-# playbook.
 ---
+# =============================================================================
+# Install needed packages for bootstrap, and call `_boostrap-common` playbook.
+# =============================================================================
+
 - name: Install packages
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
+  become: true
   gather_facts: false
   strategy: linear
-  become: true
   vars:
     interpreter_pkgs:
       - python3
@@ -32,5 +33,3 @@
 
 - name: Run common bootstrapping roles
   ansible.builtin.import_playbook: _bootstrap-common.yaml
-  vars:
-    target_hosts: all

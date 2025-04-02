@@ -1,11 +1,14 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Run the equivalent of `apt dist-upgrade --autoremove --purge`. Will
-# also configure /etc/apt according to role settings.
 ---
+# =============================================================================
+# Run the equivalent of `apt dist-upgrade --autoremove --purge`.
+# Will also configure APT according to role settings.
+# =============================================================================
+
 - name: Upgrade packages
-  hosts: all
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
+  gather_facts: true
   roles:
     - role: tina_pm.common.apt
       tags: apt

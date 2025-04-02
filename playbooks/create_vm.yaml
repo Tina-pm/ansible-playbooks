@@ -1,14 +1,17 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Create VM, install needed packages for bootstrap, and call
-# `_boostrap-common` playbook.
+---
+# =============================================================================
+# Create VM, install needed packages for bootstrap, and call `_boostrap-common`
+# playbook.
 #
 # Control variables (set with `--extra-vars=...`):
-#   target_hosts: Comma-separated list of virtual host(s) to install (required).
-#   force_reinstall: If true, re-create host definitions.
+#  * `target_hosts`: Comma-separated list of virtual host(s) to install
+#    (mandatory).
+#  * `force_reinstall`: Destroy and re-create existing host definitions.
 #
 # Note: Volume creation, formatting, and mounting is not yet implemented.
----
+# =============================================================================
+
 - name: Validate play parameters
   hosts: '{{ target_hosts | d("nonexistent") }}'
   gather_facts: false
@@ -45,8 +48,8 @@
 
 - name: Prepare host
   hosts: vm_hosts
-  gather_facts: true
   become: true
+  gather_facts: true
   tasks:
     - name: Install dependencies
       ansible.builtin.package:

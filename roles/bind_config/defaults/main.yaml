@@ -1,7 +1,8 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
 
-# Configuration files to copy (globs accepted).
+# Configuration files or directories to copy, as interpreted by the
+# ansible.builtin.copy module.
 bind_config__conf_files: []
 
 # If true, install ferm configuration file.

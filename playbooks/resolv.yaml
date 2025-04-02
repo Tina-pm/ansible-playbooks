@@ -1,11 +1,13 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Configure the DNS resolver.
 ---
-- name: Configure resolv
+# =============================================================================
+# Configure the DNS resolver.
+# =============================================================================
+
+- name: Configure the DNS resolver
   hosts: '{{ target_hosts | d("all") }}'
-  gather_facts: false
   become: true
+  gather_facts: false
   roles:
     - role: tina_pm.third_party.resolv
       when: resolv__enable
