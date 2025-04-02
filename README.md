@@ -46,8 +46,8 @@ playbook_dir = .collections/ansible_collections/tina_pm/playbooks/playbooks/
 
 ## Features
 
-* Most features and functionality are enabled either by group membership (e.g.
-  `apache_servers`) or by a boolean variable (e.g. `ferm__enable`).
+* Most features and functionality are enabled by a boolean variable (e.g.
+  `ferm__enable`).
 * Templates are provided to allow cumulative definitions for many structured
   configuration variables, using commong prefixes (e.g.
   Unless overriden, `apt__packages_to_install` is constructed by concatenanting

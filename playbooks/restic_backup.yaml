@@ -5,9 +5,10 @@
 # =============================================================================
 
 - name: Set up backups with Restic
-  hosts: '{{ target_hosts | d("libvirt_hosts") }}'
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
   gather_facts: false
   roles:
-    - role: tina_pm.playbooks.backup
-      tags: backup
+    - role: tina_pm.playbooks.restic_backup
+      when: restic_backup__enable
+      tags: [backup, restic_backup]
