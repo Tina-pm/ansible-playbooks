@@ -13,9 +13,6 @@
 - name: Manage remote disk unlocking with dropbear-initramfs
   import_playbook: ./dropbear_initramfs.yaml
 
-- name: Install and configure tinc VPN daemon
-  import_playbook: ./tinc.yaml
-
 - name: Configure APT and install required packages
   import_playbook: ./apt.yaml
 
@@ -37,14 +34,20 @@
 - name: Configure the DNS resolver
   import_playbook: ./resolv.yaml
 
+- name: Install and configure GLAuth fast and lightweight LDAP server
+  import_playbook: ./glauth.yaml
+
 - name: Install and configure Apache web server
   import_playbook: ./apache2.yaml
 
+- name: Install and configure aptly Debian repository manager
+  import_playbook: ./aptly.yaml
+
+- name: Set up backups with Restic
+  import_playbook: ./backup.yaml
+
 - name: Install and configure monitoring stack components
   import_playbook: ./monitoring.yaml
-
-- name: Install and configure GLAuth fast and lightweight LDAP server
-  import_playbook: ./glauth.yaml
 
 - name: Install and configure TheLounge web interface and bouncer for IRC
   import_playbook: ./thelounge.yaml

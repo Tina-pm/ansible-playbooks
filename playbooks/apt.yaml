@@ -11,6 +11,7 @@
   gather_facts: true
   roles:
     - role: tina_pm.common.apt
+      when: apt__enable
       tags: apt
       vars:
         # QEMU guest agent will disconnect during an upgrade.

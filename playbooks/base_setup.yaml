@@ -10,4 +10,5 @@
   gather_facts: true
   roles:
     - role: tina_pm.common.base_setup
+      when: base_setup__enable
       tags: base_setup

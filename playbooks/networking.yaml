@@ -6,6 +6,7 @@
 #  * Configure network interfaces.
 #  * Configure the DNS resolver.
 #  * Install and configure ferm firewall manager.
+#  * Install and configure tinc VPN daemon.
 # =============================================================================
 
 - name: Configure network interfaces
@@ -16,3 +17,6 @@
 
 - name: Install and configure Ferm firewall manager
   import_playbook: ./ferm.yaml
+
+- name: Install and configure tinc VPN daemon
+  import_playbook: ./tinc.yaml

@@ -10,4 +10,5 @@
   gather_facts: true
   roles:
     - role: tina_pm.common.users
+      when: users__enable
       tags: users
