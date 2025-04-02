@@ -174,14 +174,6 @@ restic_backup__enable: false
 simple_bind__enable: false
 simple_bind__install_ferm_svc: '{{ ferm__enable | bool }}'
 
-# Role: tinc
-# -----------------------------------------------------------------------------
-
-tinc__enable: false
-tinc__netname: tinc
-tinc__install_ferm_svc: '{{ ferm__enable | bool }}'
-tinc__local_cache: '{{ inventory_dir }}/fetch'
-
 # Role: thelounge
 # -----------------------------------------------------------------------------
 
