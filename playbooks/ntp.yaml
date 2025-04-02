@@ -10,5 +10,5 @@
   gather_facts: true
   roles:
     - role: tina_pm.third_party.ntp
-      when: ntp_enabled
+      when: ntp__enable
       tags: ntp

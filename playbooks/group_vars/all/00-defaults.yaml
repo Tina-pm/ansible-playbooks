@@ -134,6 +134,8 @@ node_exporter__extra_args: |
 # Role: ntp
 # -----------------------------------------------------------------------------
 
+ntp__enable: true
+# ntp_enabled: whether to run ntpd or not.
 ntp_enabled: true
 ntp_timezone: Etc/UTC
 ntp_manage_config: true
