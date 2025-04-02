@@ -80,12 +80,6 @@ bootstrap__install_packages__common:
 dehydrated__enable: false
 dehydrated__cert_path: /var/lib/dehydrated/certs
 
-# Role: fail2ban
-# -----------------------------------------------------------------------------
-
-fail2ban__enable: true
-fail2ban__install_ferm_svc: '{{ ferm__enable | bool }}'
-
 # Role: ferm
 # -----------------------------------------------------------------------------
 
