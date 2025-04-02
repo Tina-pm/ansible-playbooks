@@ -9,5 +9,5 @@
   become: true
   gather_facts: false
   roles:
-    - role: tina_pm.playbooks.backup
-      tags: backup
+    - role: tina_pm.playbooks.restic_backup
+      tags: [backup, restic_backup]
