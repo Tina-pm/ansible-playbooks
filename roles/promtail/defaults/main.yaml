@@ -1,0 +1,29 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+promtail__listen_port: 9080
+promtail__storage_dir: /var/lib/promtail
+
+promtail__scrape_configs: []
+
+# Optionally add the promtail user to a list of groups.
+promtail__add_to_groups: []
+
+# If true, install ferm configuration file.
+promtail__install_ferm_svc: false
+
+# Optionally limit access to a list of IP addresses.
+promtail__ferm_allow_from: ~
+
+# Pushing logs to Loki.
+# -----------------------------------------------------------------------------
+
+# List of Loki instances to push logs to.
+promtail__client_urls: []
+
+# Parameters for Loki clients.
+promtail__client_defaults: {}
+
+# Full push clients configuration block,
+# if set overrides `promtail__client_urls` and `promtail__client_defaults`.
+promtail__clients: []

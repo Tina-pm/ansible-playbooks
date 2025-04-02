@@ -8,7 +8,10 @@ positions:
   filename: {{ promtail__storage_dir + '/positions.yaml' | to_yaml | trim }}
 
 clients:
-  {{ promtail__clients | to_nice_yaml(indent=2) | indent(2) }}
+  {{
+    (promtail__clients or _promtail_clients_from_urls) |
+    to_nice_yaml(indent=2) | indent(2)
+  }}
 
 scrape_configs:
   {{ promtail__scrape_configs | to_nice_yaml(indent=2) | indent(2) }}
