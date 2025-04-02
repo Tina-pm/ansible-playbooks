@@ -11,4 +11,4 @@
   roles:
     - role: tina_pm.common.glauth
       when: glauth__enable
-      tags: [ldap]
+      tags: [ldap, glauth]
