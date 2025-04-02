@@ -30,7 +30,7 @@
       tags: [monitoring, blackbox-exporter]
 
     - role: tina_pm.common.prometheus
-      when: inventory_hostname in groups.get('prometheus_servers', [])
+      when: prometheus__enable
       tags: [monitoring, prometheus]
 
     - role: tina_pm.playbooks.grafana
@@ -38,9 +38,9 @@
       tags: [monitoring, grafana]
 
     - role: tina_pm.playbooks.loki
-      when: inventory_hostname in groups.get('loki_servers', [])
+      when: loki__enable
       tags: [monitoring, loki]
 
     - role: tina_pm.playbooks.promtail
-      when: inventory_hostname in groups.get('promtail_servers', [])
+      when: promtail__enable
       tags: [monitoring, promtail]
