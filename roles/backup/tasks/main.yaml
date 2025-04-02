@@ -1,0 +1,40 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+- name: Install needed packages
+  ansible.builtin.package:
+    name:
+      - moreutils
+      - restic
+    state: present
+
+- name: Set up backup script
+  ansible.builtin.copy:
+    src: files/backup.sh
+    dest: /usr/local/sbin/backup.sh
+    owner: root
+    group: root
+    mode: '0775'
+
+- name: Save restic password
+  ansible.builtin.copy:
+    content: '{{ backup__restic_password }}'
+    dest: /usr/local/etc/restic_password
+    owner: root
+    group: root
+    mode: '0600'
+  no_log: true
+  when: backup__restic_password
+
+- name: Set up cron job
+  ansible.builtin.copy:
+    content: |
+      #!/bin/sh
+
+      export RESTIC_PASSWORD_FILE=/usr/local/etc/restic_password
+      export RESTIC_REPOSITORY={{ backup__restic_repository }}
+      exec chronic /usr/local/sbin/backup.sh
+    dest: /etc/cron.daily/backup
+    owner: root
+    group: root
+    mode: '0775'
