@@ -41,5 +41,6 @@
       when: inventory_hostname in groups.get('loki_servers', [])
       tags: [monitoring, loki]
 
-- name: Install and configure promtail log collection agent
-  import_playbook: ./promtail.yaml
+    - role: tina_pm.playbooks.promtail
+      when: inventory_hostname in groups.get('promtail_servers', [])
+      tags: [monitoring, promtail]
