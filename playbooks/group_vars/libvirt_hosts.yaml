@@ -39,7 +39,7 @@ ferm__services__libvirt:
   libvirt-exporter:
     proto: tcp
     dport: 9177
-    saddr: '{{ node_exporter__allow_from }}'
+    saddr: '{{ node_exporter__ferm_allow_from }}'
 
 ferm__custom_configs__libvirt_hosts: |
   {{
