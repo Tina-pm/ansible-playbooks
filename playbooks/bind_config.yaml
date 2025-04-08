@@ -1,9 +1,11 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Install and manage Bind9 configuration.
 ---
-- name: Install and manage Bind9 configuration
-  hosts: all
+# =============================================================================
+# Install Bind9 and deploy raw configuration files.
+# =============================================================================
+
+- name: Install Bind9 and deploy raw configuration files
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
   gather_facts: false
   roles:

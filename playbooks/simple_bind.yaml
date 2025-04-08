@@ -1,11 +1,13 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Install bind9 server.
 ---
-- name: Install bind9 server
-  hosts: all
-  gather_facts: false
+# =============================================================================
+# Install and configure Bind9 DNS server.
+# =============================================================================
+
+- name: Install and configure Bind9 DNS server
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
+  gather_facts: false
   roles:
     - role: tina_pm.common.simple_bind
       when: simple_bind__enable

@@ -1,11 +1,13 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Setup apache2 server and configurations.
 ---
-- name: Setup apache2 server and configurations
-  hosts: all
-  gather_facts: false
+# =============================================================================
+# Install and configure Apache web server.
+# =============================================================================
+
+- name: Install and configure Apache web server
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
+  gather_facts: false
   roles:
     - role: tina_pm.common.apache2
       when: apache2__enable

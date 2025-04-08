@@ -1,7 +1,9 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Set up host base configuration.
 ---
+# =============================================================================
+# Set up host base configuration.
+# =============================================================================
+
 - name: Set up host base configuration
   hosts: '{{ target_hosts | d("all") }}'
   become: true

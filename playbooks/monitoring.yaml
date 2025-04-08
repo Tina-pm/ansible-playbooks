@@ -1,13 +1,19 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Set up Prometheus, Grafana, `node_exporter`, `mtail` and `blackbox
-# exporter`.
 ---
-- name: Set up monitoring stack
-  hosts: all
-  gather_facts: false
-  become: true
+# =============================================================================
+# Install and configure monitoring stack components:
+#
+#  * Grafana observability and data visualization platform.
+#  * Prometheus monitoring system and timeseries database.
+#  * Prometheus node exporter.
+#  * Prometheus blackbox exporter.
+#  * Mtail monitoring data extractor from logs.
+# =============================================================================
 
+- name: Install and configure monitoring stack components
+  hosts: '{{ target_hosts | d("all") }}'
+  become: true
+  gather_facts: false
   roles:
     - role: tina_pm.common.prometheus_node_exporter
       when: node_exporter__enable

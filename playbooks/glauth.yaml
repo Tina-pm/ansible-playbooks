@@ -1,12 +1,14 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Install and configure fast and lightweight LDAP server.
 ---
-- name: Install and configure fast and lightweight LDAP server
-  hosts: all
-  gather_facts: false
+# =============================================================================
+# Install and configure GLAuth fast and lightweight LDAP server.
+# =============================================================================
+
+- name: Install and configure GLAuth fast and lightweight LDAP server
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
+  gather_facts: false
   roles:
     - role: tina_pm.common.glauth
       when: glauth__enable
-      tags: [ldap]
+      tags: [ldap, glauth]

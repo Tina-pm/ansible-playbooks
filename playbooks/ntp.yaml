@@ -1,11 +1,13 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Set up network time syncronization.
 ---
+# =============================================================================
+# Set up network time syncronization.
+# =============================================================================
+
 - name: Set up network time syncronization
-  hosts: all
-  gather_facts: true
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
+  gather_facts: true
   roles:
     - role: tina_pm.third_party.ntp
       when: ntp_enabled

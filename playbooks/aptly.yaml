@@ -1,9 +1,11 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Playbook: Install and configure aptly.
 ---
-- name: Install and configure aptly
-  hosts: all
+# =============================================================================
+# Install and configure aptly Debian repository manager.
+# =============================================================================
+
+- name: Install and configure aptly Debian repository manager
+  hosts: '{{ target_hosts | d("all") }}'
   become: true
   gather_facts: false
   roles:
