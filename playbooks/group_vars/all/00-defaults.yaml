@@ -155,3 +155,8 @@ simple_bind__install_ferm_svc: '{{ ferm__enable | bool }}'
 tinc__netname: tinc
 tinc__install_ferm_svc: '{{ ferm__enable | bool }}'
 tinc__local_cache: '{{ inventory_dir }}/fetch'
+
+# Role: thelounge
+# -----------------------------------------------------------------------------
+
+thelounge__enable: false

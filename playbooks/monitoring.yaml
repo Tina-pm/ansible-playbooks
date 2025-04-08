@@ -8,6 +8,8 @@
 #  * Prometheus node exporter.
 #  * Prometheus blackbox exporter.
 #  * Mtail monitoring data extractor from logs.
+#  * Loki log collector and analyser.
+#  * Promtail log collection agent
 # =============================================================================
 
 - name: Install and configure monitoring stack components
@@ -28,9 +30,16 @@
       tags: [monitoring, blackbox-exporter]
 
     - role: tina_pm.common.prometheus
-      when: inventory_hostname in groups['prometheus_servers']
+      when: inventory_hostname in groups.get('prometheus_servers', [])
       tags: [monitoring, prometheus]
 
     - role: tina_pm.playbooks.grafana
       when: grafana__enable
       tags: [monitoring, grafana]
+
+    - role: tina_pm.playbooks.loki
+      when: inventory_hostname in groups.get('loki_servers', [])
+      tags: [monitoring, loki]
+
+- name: Install and configure promtail log collection agent
+  import_playbook: ./promtail.yaml

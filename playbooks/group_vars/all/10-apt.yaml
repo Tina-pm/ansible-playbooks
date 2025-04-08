@@ -4,6 +4,7 @@
 # Reusable defaults and templates for APT role.
 # =============================================================================
 
+apt__enable: true
 apt__distro: bookworm
 
 # Add private APT repositories.

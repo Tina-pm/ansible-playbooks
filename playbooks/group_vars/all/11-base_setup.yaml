@@ -4,6 +4,7 @@
 # Reusable defaults for base-setup role.
 # =============================================================================
 
+base_setup__enable: true
 base_setup__set_hostname: '{{ host_fqdn }}'
 base_setup__disable_cloud_init: true
 base_setup__disable_resolved: true
