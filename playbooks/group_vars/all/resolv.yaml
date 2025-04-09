@@ -1,0 +1,12 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for resolv role.
+# =============================================================================
+
+resolv__enable: false
+resolv_nameservers: |-
+  {{
+    (['127.0.0.1'] if simple_bind__enable else []) + nameservers
+  }}
+resolv_domain: '{{ domain_name | d(omit) }}'

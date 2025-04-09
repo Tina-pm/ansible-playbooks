@@ -1,0 +1,24 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for glauth role.
+# =============================================================================
+
+glauth__enable: false
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+glauth__config_datastore_users: |-
+  {{
+    query('vars',
+      *(query('varnames', '^glauth__config_datastore_users__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+glauth__config_datastore_groups: |-
+  {{
+    query('vars',
+      *(query('varnames', '^glauth__config_datastore_groups__.*') | sort)
+    ) | sum(start=[])
+  }}

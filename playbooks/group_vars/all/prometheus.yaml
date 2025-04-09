@@ -1,7 +1,7 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
 # =============================================================================
-# Reusable defaults for prometheus role.
+# Reusable defaults and templates for prometheus role.
 # =============================================================================
 
 prometheus__enable: false
@@ -206,3 +206,48 @@ _mtail_relabel_configs:
 
     - action: labeldrop
       regex: exported_instance
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+prometheus__alertmanagers: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__alertmanagers__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+prometheus__monitored_nodes: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__monitored_nodes__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+prometheus__scrape_configs: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__scrape_configs__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+prometheus__rules: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__rules__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+prometheus__monitored_prometheus: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__monitored_prometheus__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+prometheus__federated_prometheus: |-
+  {{
+    query('vars',
+      *(query('varnames', '^prometheus__federated_prometheus__.*') | sort)
+    ) | sum(start=[])
+  }}

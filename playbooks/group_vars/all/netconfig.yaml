@@ -1,20 +1,23 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
+---
+# =============================================================================
 # Simple network configuration templates and defaults.
+# =============================================================================
+
 # To use these templates:
 #
 # net__enable: true
 # net__use_udev_persistent_rules: true
 # net__interfaces: '{{ netconfig__interfaces }}'
----
 
-# Defaults.
+# Configuration variables.
+# -----------------------------------------------------------------------------
 
-## Public interface configuration.
+# Public interface configuration.
 pubnet_iface: ~
 pubnet_hwaddr: ~
 
-### IPv4 configuration.
+## IPv4 configuration.
 pubnet_host: ~
 pubnet_mask: 24
 pubnet_gwidx: ~
@@ -31,7 +34,7 @@ pubnet_gw: |-
 pubnet_routed_nets: []
 pubnet_config_override: ~
 
-### IPv6 configuration.
+## IPv6 configuration.
 pubnet6_host: ~
 pubnet6_mask: 64
 pubnet6_gwidx: ~
@@ -48,11 +51,11 @@ pubnet6_gw: |-
 pubnet6_routed_nets: []
 pubnet6_config_override: ~
 
-## Private interface configuration.
+# Private interface configuration.
 privnet_iface: ~
 privnet_hwaddr: ~
 
-### IPv4 configuration.
+## IPv4 configuration.
 privnet_host: ~
 privnet_mask: 24
 privnet_gwidx: ~
@@ -69,7 +72,7 @@ privnet_gw: |-
 privnet_routed_nets: []
 privnet_config_override: ~
 
-### IPv6 configuration.
+## IPv6 configuration.
 privnet6_host: ~
 privnet6_mask: 64
 privnet6_gwidx: ~
@@ -87,6 +90,7 @@ privnet6_routed_nets: []
 privnet6_config_override: ~
 
 # Templates.
+# -----------------------------------------------------------------------------
 
 netconfig__interfaces: |-
   {{

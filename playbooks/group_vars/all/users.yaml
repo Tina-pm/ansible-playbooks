@@ -1,7 +1,7 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
 # =============================================================================
-# Reusable defaults for users role.
+# Reusable defaults and templates for users role.
 # =============================================================================
 
 users__enable: true
@@ -46,4 +46,42 @@ users__create_users__simple: |-
       difference(users__admins_from_def) |
       map('extract', users__local_defs)
     )
+  }}
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+users__create_users: |-
+  {{
+    query('vars',
+      *(query('varnames', '^users__create_users__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+users__create_groups: |-
+  {{
+    query('vars',
+      *(query('varnames', '^users__create_groups__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+users__create_from_def: |-
+  {{
+    query('vars',
+      *(query('varnames', '^users__create_from_def__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+users__admins_from_def: |-
+  {{
+    query('vars',
+      *(query('varnames', '^users__admins_from_def__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+users__admin_groups: |-
+  {{
+    query('vars',
+      *(query('varnames', '^users__admin_groups__.*') | sort)
+    ) | sum(start=[])
   }}

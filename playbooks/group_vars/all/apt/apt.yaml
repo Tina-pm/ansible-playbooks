@@ -7,6 +7,9 @@
 apt__enable: true
 apt__distro: bookworm
 
+# Add packages from base_setup.
+apt__packages_to_install__base_setup: '{{ base_setup__pkg_install }}'
+
 # Add private APT repositories.
 apt__local_source_enable: false
 apt__local_source_mirror: https://debian.{{ domain_name }}/
@@ -29,3 +32,54 @@ apt__custom_sources__local: |-
   {% endif %}
   {% endfor %}
   {% endfilter %}
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+apt__custom_sources: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apt__custom_sources__.*') | sort)
+      )
+    )
+  }}
+
+apt__trusted_keys: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apt__trusted_keys__.*') | sort)
+      )
+    )
+  }}
+
+apt__custom_preferences: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apt__custom_preferences__.*') | sort)
+      )
+    )
+  }}
+
+apt__packages_to_install: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apt__packages_to_install__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+apt__services_to_enable: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apt__services_to_enable__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+apt__services_to_start: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apt__services_to_start__.*') | sort)
+    ) | sum(start=[])
+  }}
