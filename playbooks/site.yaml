@@ -44,7 +44,7 @@
   import_playbook: ./aptly.yaml
 
 - name: Set up backups with Restic
-  import_playbook: ./backup.yaml
+  import_playbook: ./restic_backup.yaml
 
 - name: Install and configure monitoring stack components
   import_playbook: ./monitoring.yaml

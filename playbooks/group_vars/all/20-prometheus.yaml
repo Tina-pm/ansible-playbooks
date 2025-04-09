@@ -4,8 +4,9 @@
 # Reusable defaults for prometheus role.
 # =============================================================================
 
+prometheus__enable: false
 prometheus__install_ferm_svc: '{{ ferm__enable | bool }}'
-prometheus__allow_from: '{{ trusted_networks }}'
+prometheus__ferm_allow_from: '{{ trusted_networks }}'
 
 prometheus__rules__base:
   - files/prometheus/rules/node-basic.rules.yml

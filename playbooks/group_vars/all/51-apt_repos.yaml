@@ -1,14 +1,29 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
+# =============================================================================
+# Additional APT sources for roles using non-official repositories.
+# =============================================================================
 
-# Additional APT sources for grafana servers.
-apt__custom_sources__grafana:
+apt__use_grafana_repo: |-
+  {{
+    (
+      grafana__enabled | bool,
+      loki__enabled | bool,
+      promtail__enabled | bool,
+    ) is any
+  }}
+apt__custom_sources__grafana: |-
+  {{ _apt_grafana_repo if apt__use_grafana_repo else {} }}
+apt__trusted_keys__grafana: |-
+  {{ _apt_grafana_key if apt__use_grafana_repo else {} }}
+
+_apt_grafana_repo:
   grafana:
     mirror: https://packages.grafana.com/oss/deb
     distro: stable
     components: main
 
-apt__trusted_keys__grafana:
+_apt_grafana_key:
   grafana: |
     mQGNBGTnhmkBDADUE+SzjRRyitIm1siGxiHlIlnn6KO4C4GfEuV+PNzqxvwYO+1rmcKlGDU0ugo8
     ohXruAOC77Kwc4keVGNU89BeHvrYbIftz/yxEneuPsCbGnbDMIyCk44UOetRtV9/59Gj5YjNqnsZ

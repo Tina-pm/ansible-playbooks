@@ -64,8 +64,8 @@ bind_config__conf_files: '{{ inventory_dir }}/bind/*'
 # -----------------------------------------------------------------------------
 
 blackbox_exporter__enable: false
-blackbox_exporter__allow_from: '{{ trusted_networks }}'
 blackbox_exporter__install_ferm_svc: '{{ ferm__enable | bool }}'
+blackbox_exporter__ferm_allow_from: '{{ trusted_networks }}'
 
 # Playbook: bootstrap / create_vm
 # -----------------------------------------------------------------------------
@@ -96,6 +96,11 @@ ferm__enable: false
 
 glauth__enable: false
 
+# Role: loki
+# -----------------------------------------------------------------------------
+
+loki__enable: false
+
 # Role: mtail
 # -----------------------------------------------------------------------------
 
@@ -112,7 +117,7 @@ net__enable: false
 
 node_exporter__enable: true
 node_exporter__install_ferm_svc: '{{ ferm__enable | bool }}'
-node_exporter__allow_from: '{{ trusted_networks }}'
+node_exporter__ferm_allow_from: '{{ trusted_networks }}'
 node_exporter__listen_addr: ''
 node_exporter__listen_port: 9100
 node_exporter__disk_ignored_devs:
@@ -129,6 +134,8 @@ node_exporter__extra_args: |
 # Role: ntp
 # -----------------------------------------------------------------------------
 
+ntp__enable: true
+# ntp_enabled: whether to run ntpd or not.
 ntp_enabled: true
 ntp_timezone: Etc/UTC
 ntp_manage_config: true
@@ -136,6 +143,7 @@ ntp_manage_config: true
 # Role: promtail
 # -----------------------------------------------------------------------------
 
+promtail__enable: false
 promtail__install_ferm_svc: '{{ ferm__enable | bool }}'
 promtail__ferm_allow_from: '{{ trusted_networks }}'
 promtail__scrape_config__varlogs:
@@ -155,6 +163,11 @@ resolv_nameservers: |-
   }}
 resolv_domain: '{{ domain_name | d(omit) }}'
 
+# role: restic_backup
+# -----------------------------------------------------------------------------
+
+restic_backup__enable: false
+
 # Role: simple_bind
 # -----------------------------------------------------------------------------
 
@@ -164,6 +177,7 @@ simple_bind__install_ferm_svc: '{{ ferm__enable | bool }}'
 # Role: tinc
 # -----------------------------------------------------------------------------
 
+tinc__enable: false
 tinc__netname: tinc
 tinc__install_ferm_svc: '{{ ferm__enable | bool }}'
 tinc__local_cache: '{{ inventory_dir }}/fetch'
