@@ -6,3 +6,90 @@
 
 simple_bind__enable: false
 simple_bind__install_ferm_svc: '{{ ferm__enable | bool }}'
+
+simple_bind__options__base:
+  forward: first
+  forwarders: []
+  listen_on:
+    - port: 53
+      match_list: [any]
+  listen_on_v6:
+    - port: 53
+      match_list: [any]
+
+simple_bind__views__base:
+  - name: default
+    match_clients:
+      - any
+    allow_transfer:
+      - any
+    recursion: true
+    allow_recursion:
+      - localhost
+      - localnets
+    includes:
+      - named.conf.default-zones
+      - zones.rfc1918
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+simple_bind__options: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^simple_bind__options__.*') | sort)
+      )
+    )
+  }}
+
+simple_bind__includes: |-
+  {{
+    query('vars',
+      *(query('varnames', '^simple_bind__includes__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+simple_bind__acls: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^simple_bind__acls__.*') | sort)
+      )
+    )
+  }}
+
+simple_bind__in_view_zones: |-
+  {{
+    query('vars',
+      *(query('varnames', '^simple_bind__in_view_zones__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+simple_bind__primary_zones: |-
+  {{
+    query('vars',
+      *(query('varnames', '^simple_bind__primary_zones__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+simple_bind__secondary_zones: |-
+  {{
+    query('vars',
+      *(query('varnames', '^simple_bind__secondary_zones__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+simple_bind__forward_zones: |-
+  {{
+    query('vars',
+      *(query('varnames', '^simple_bind__forward_zones__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+simple_bind__views: |-
+  {{
+    query('vars',
+      *(query('varnames', '^simple_bind__views__.*') | sort)
+    ) | sum(start=[])
+  }}
