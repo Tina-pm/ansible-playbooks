@@ -1,0 +1,93 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for tinc role.
+# =============================================================================
+
+tinc__enable: false
+tinc__netname: tinc
+tinc__vpn_interface: '{{ tinc__netname }}'
+tinc__allow_incoming_connections: false
+tinc__install_ferm_svc: '{{ ferm__enable | bool }}'
+tinc__local_cache: '{{ inventory_dir }}/.cache'
+
+# Export the VPN interface addresses as single-host subnets.
+tinc__vpn_local_subnets__00_vpn_addresses: |-
+  {{ tinc__vpn_addresses | ipaddr('address') | ipaddr('host') }}
+
+# Extra configuration variables.
+# -----------------------------------------------------------------------------
+
+# Use netconfig-style variables to configure tinc listening socket and network
+# interface.
+tinc__use_netconfig: true
+
+# Variable prefixes to find public listening addresses.
+# e.g. `pubnet` extracts values from `pubnet_host` and `pubnet6_host`.
+tinc__netconfig_public_addr_from:
+  - pubnet
+
+# Variable prefixes to find VPN interface addresses and masks.
+# e.g. `privnet` extracts values from `privnet_host`, `privnet_mask`,
+# `privnet6_host`, and `privnet6_mask`.
+tinc__netconfig_vpn_addr_from:
+  - privnet
+
+# Expose networks defined in `local_networks` to the VPN.
+tinc__expose_local_networks: true
+
+# -----------------------------------------------------------------------------
+
+tinc__public_addresses: |-
+  {{ _tinc_nc_public_addr if tinc__use_netconfig else [] }}
+tinc__vpn_addresses__00_netconfig: |-
+  {{ _tinc_nc_vpn_addr if tinc__use_netconfig else [] }}
+tinc__vpn_extra_subnets__localnet: |-
+  {{ local_networks if tinc__expose_local_networks | bool else [] }}
+
+_tinc_nc_public_addr_varnames: |-
+  {{
+    tinc__netconfig_public_addr_from |
+    ansible.builtin.product(('', '6'), ('_host',)) |
+    map('join')
+  }}
+_tinc_nc_public_addr: |-
+  {{ query('vars', *_tinc_nc_public_addr_varnames, default='') | select }}
+
+_tinc_nc_vpn_addr_varnames: |-
+  {{
+    tinc__netconfig_vpn_addr_from |
+    ansible.builtin.product(('', '6'), ('_host', '_mask')) |
+    map('join')
+  }}
+# Group into pairs of (host, mask) and discard if either is missing.
+_tinc_nc_vpn_addr: |-
+  {{
+    query('vars', *_tinc_nc_vpn_addr_varnames, default='') |
+    batch(2) | select('all') |
+    map('join', '/')
+  }}
+
+# Agregation of configuration variables using var prefixes
+# -----------------------------------------------------------------------------
+
+tinc__vpn_addresses: |-
+  {{
+    query('vars',
+      *(query('varnames', '^tinc__vpn_addresses__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+tinc__vpn_local_subnets: |-
+  {{
+    query('vars',
+      *(query('varnames', '^tinc__vpn_local_subnets__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+tinc__vpn_extra_subnets: |-
+  {{
+    query('vars',
+      *(query('varnames', '^tinc__vpn_extra_subnets__.*') | sort)
+    ) | sum(start=[])
+  }}

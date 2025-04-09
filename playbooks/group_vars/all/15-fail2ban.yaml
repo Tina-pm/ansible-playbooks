@@ -1,0 +1,90 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for fail2ban role.
+# =============================================================================
+
+fail2ban__enable: true
+fail2ban__install_ferm_svc: '{{ ferm__enable | bool }}'
+
+# Extra configuration variables.
+# -----------------------------------------------------------------------------
+
+# Add jail configurations for services.
+fail2ban__use_jail_sshd: true
+fail2ban__use_jail_apache2: '{{ apache2__enable | bool }}'
+
+# Jail configuration snippets.
+# -----------------------------------------------------------------------------
+fail2ban__jail_config__00_default:
+  DEFAULT:
+    bantime: 10m
+    bantime.increment: true
+    maxretry: 5
+
+fail2ban__jail_config__01_fromconf: |-
+  {{
+    {} | combine(
+      _fail2ban_jail_cfg_sshd if fail2ban__use_jail_sshd | bool else {},
+      _fail2ban_jail_cfg_apache2 if fail2ban__use_jail_apache2 | bool else {},
+    )
+  }}
+fail2ban__path_overrides__01_fromconf: |-
+  {{
+    {} | combine(
+      _fail2ban_path_overrides_apache2 if fail2ban__use_jail_apache2 else {},
+    )
+  }}
+
+_fail2ban_jail_cfg_sshd:
+  sshd:
+    backend: systemd
+    enabled: true
+
+_fail2ban_jail_cfg_apache2:
+  apache-auth:
+    enabled: true
+  apache-badbots:
+    enabled: true
+  apache-overflows:
+    enabled: true
+  apache-noscript:
+    enabled: true
+    maxretry: 10
+
+_fail2ban_path_overrides_apache2:
+  apache_error_log: |-
+    {{
+      apache2__logdirs |
+      ansible.builtin.zip_longest([], fillvalue='error.log') |
+      map('ansible.builtin.path_join')
+    }}
+  apache_access_log: |-
+    {{
+      apache2__logdirs |
+      ansible.builtin.zip_longest([], fillvalue='access.log') |
+      map('ansible.builtin.path_join')
+    }}
+
+# Agregation of configuration variables using var prefixes
+# -----------------------------------------------------------------------------
+
+fail2ban__jail_config: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^fail2ban__jail_config__.*') | sort)
+      ),
+      recursive=True, list_merge='append_rp',
+    )
+  }}
+
+fail2ban__path_overrides: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^fail2ban__path_overrides__.*') | sort)
+      ),
+      recursive=True, list_merge='append_rp',
+    )
+  }}
