@@ -133,6 +133,18 @@ ntp_enabled: true
 ntp_timezone: Etc/UTC
 ntp_manage_config: true
 
+# Role: promtail
+# -----------------------------------------------------------------------------
+
+promtail__install_ferm_svc: '{{ ferm__enable | bool }}'
+promtail__ferm_allow_from: '{{ trusted_networks }}'
+promtail__scrape_config__varlogs:
+  job_name: varlogs
+  static_configs:
+    - labels:
+        job: varlogs
+        __path__: /var/log/*.log
+
 # Role: resolv
 # -----------------------------------------------------------------------------
 

@@ -236,6 +236,11 @@ promtail__add_to_groups: |-
       *(query('varnames', '^promtail__add_to_groups__.*') | sort)
     ) | sum(start=[])
   }}
+promtail__scrape_configs: |-
+  {{
+    query('vars', *(query('varnames', '^promtail__scrape_config__.*') | sort)) |
+    select
+  }}
 
 # Role: glauth
 # -----------------------------------------------------------------------------
