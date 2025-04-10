@@ -1,7 +1,8 @@
 # vim:ts=2:sw=2:et:ai:sts=2
-
-# Role: Install and configure grafana
 ---
+# =============================================================================
+# Reusable defaults and templates for grafana role.
+# =============================================================================
 
 grafana__enable: false
 

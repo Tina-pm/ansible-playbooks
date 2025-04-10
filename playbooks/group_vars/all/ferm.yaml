@@ -1,0 +1,28 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for ferm role.
+# =============================================================================
+
+ferm__enable: false
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+ferm__services: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^ferm__services__.*') | sort)
+      )
+    )
+  }}
+
+ferm__custom_configs: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^ferm__custom_configs__.*') | sort)
+      )
+    )
+  }}
