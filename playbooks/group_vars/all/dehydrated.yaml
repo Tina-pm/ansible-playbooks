@@ -1,0 +1,8 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for dehydrated (not yet a role).
+# =============================================================================
+
+dehydrated__enable: false
+dehydrated__cert_path: /var/lib/dehydrated/certs

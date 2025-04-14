@@ -1,0 +1,19 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for net role.
+# =============================================================================
+
+net__enable: false
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+net__interfaces: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^net__interfaces__.*') | sort)
+      )
+    )
+  }}

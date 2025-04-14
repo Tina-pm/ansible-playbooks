@@ -1,7 +1,7 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
 # =============================================================================
-# Reusable defaults for apache2 role.
+# Reusable defaults and templates for apache2 role.
 # =============================================================================
 
 apache2__enable: false
@@ -102,3 +102,54 @@ apache2__sites__ssl:
         SSLCertificateChainFile {{ apache2__default_ssl_cert_path }}/chain.pem
       {% endif %}
       </VirtualHost>
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+apache2__listen_http: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apache2__listen_http__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+apache2__listen_https: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apache2__listen_https__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+apache2__mods: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apache2__mods__.*') | sort)
+      )
+    )
+  }}
+
+apache2__conf: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apache2__conf__.*') | sort)
+      )
+    )
+  }}
+
+apache2__sites: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apache2__sites__.*') | sort)
+      )
+    )
+  }}
+
+apache2__logdirs: |-
+  {{
+    query('vars',
+      *(query('varnames', '^apache2__logdirs__.*') | sort)
+    ) | sum(start=[])
+  }}

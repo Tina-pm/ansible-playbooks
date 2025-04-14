@@ -1,0 +1,20 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for bootstrap and create_vm playbooks.
+# =============================================================================
+
+# Essential packages before ansible can run.
+bootstrap__install_packages__common:
+  - python3
+  - python3-apt
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+bootstrap__install_packages: |-
+  {{
+    query('vars',
+      *(query('varnames', '^bootstrap__install_packages__.*') | sort)
+    ) | sum(start=[])
+  }}

@@ -7,9 +7,9 @@
 apt__use_grafana_repo: |-
   {{
     (
-      grafana__enabled | bool,
-      loki__enabled | bool,
-      promtail__enabled | bool,
+      grafana__enable | bool,
+      loki__enable | bool,
+      promtail__enable | bool,
     ) is any
   }}
 apt__custom_sources__grafana: |-

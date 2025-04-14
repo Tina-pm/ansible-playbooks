@@ -1,7 +1,7 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
 # =============================================================================
-# Reusable defaults for base-setup role.
+# Reusable defaults and templates for base-setup role.
 # =============================================================================
 
 base_setup__enable: true
@@ -36,9 +36,6 @@ base_setup__pkg_install__base:
   - tmux
   - vim
 
-# Also add base packages to apt role's list.
-apt__packages_to_install__base_setup: '{{ base_setup__pkg_install }}'
-
 base_setup__setup_locales: true
 base_setup__default_locale: en_IE.UTF-8
 base_setup__locales_to_be_generated:
@@ -46,3 +43,13 @@ base_setup__locales_to_be_generated:
   - en_US.UTF-8 UTF-8
   - es_AR.UTF-8 UTF-8
   - es_ES.UTF-8 UTF-8
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+base_setup__pkg_install: |-
+  {{
+    query('vars',
+      *(query('varnames', '^base_setup__pkg_install__.*') | sort)
+    ) | sum(start=[])
+  }}
