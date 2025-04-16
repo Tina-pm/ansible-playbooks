@@ -27,6 +27,7 @@ base_setup__pkg_install__base:
   - moreutils
   - ncurses-term
   - netcat-openbsd
+  - ripgrep
   - rsync
   - rsyslog
   - screen
@@ -35,6 +36,7 @@ base_setup__pkg_install__base:
   - tcpdump
   - tmux
   - vim
+  - zsh
 
 # Also add base packages to apt role's list.
 apt__packages_to_install__base_setup: '{{ base_setup__pkg_install }}'
