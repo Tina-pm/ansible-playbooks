@@ -1,0 +1,21 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for node_exporter role.
+# =============================================================================
+
+node_exporter__enable: true
+node_exporter__install_ferm_svc: '{{ ferm__enable | bool }}'
+node_exporter__ferm_allow_from: '{{ trusted_networks }}'
+node_exporter__listen_addr: ''
+node_exporter__listen_port: 9100
+node_exporter__disk_ignored_devs:
+node_exporter__fs_ignored_mounts:
+  ^/(dev|proc|run|sys|mnt|media|var/lib/docker/.+)($|/)
+node_exporter__net_ignored_devs: ^lo$
+node_exporter__enabled_collectors:
+node_exporter__extra_args: |
+  {% if node_exporter__version is defined and
+      node_exporter__version is version('1.0.0', 'ge') %}
+  --collector.cpu.info
+  {% endif %}

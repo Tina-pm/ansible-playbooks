@@ -1,0 +1,9 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for blackbox_exporter role.
+# =============================================================================
+
+blackbox_exporter__enable: false
+blackbox_exporter__install_ferm_svc: '{{ ferm__enable | bool }}'
+blackbox_exporter__ferm_allow_from: '{{ trusted_networks }}'

@@ -1,0 +1,31 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for promtail role.
+# =============================================================================
+
+promtail__enable: false
+promtail__install_ferm_svc: '{{ ferm__enable | bool }}'
+promtail__ferm_allow_from: '{{ trusted_networks }}'
+promtail__scrape_config__varlogs:
+  job_name: varlogs
+  static_configs:
+    - labels:
+        job: varlogs
+        __path__: /var/log/*.log
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+promtail__add_to_groups: |-
+  {{
+    query('vars',
+      *(query('varnames', '^promtail__add_to_groups__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+promtail__scrape_configs: |-
+  {{
+    query('vars', *(query('varnames', '^promtail__scrape_config__.*') | sort)) |
+    select
+  }}

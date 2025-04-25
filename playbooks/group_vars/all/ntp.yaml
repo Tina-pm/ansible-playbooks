@@ -1,0 +1,11 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for ntp role.
+# =============================================================================
+
+ntp__enable: true
+# ntp_enabled: whether to run ntpd or not.
+ntp_enabled: true
+ntp_timezone: Etc/UTC
+ntp_manage_config: true
