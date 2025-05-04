@@ -1,7 +1,7 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
 # =============================================================================
-# Reusable defaults and templates for postgresql role.
+# Reusable defaults and templates for postgresql and postgresql_objects roles.
 # =============================================================================
 
 postgresql__enable: false
@@ -40,5 +40,33 @@ postgresql_pg_hba_conf: |-
   {{
     query('vars',
       *(query('varnames', '^postgresql_pg_hba_conf__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+postgresql_objects_users: |-
+  {{
+    query('vars',
+      *(query('varnames', '^postgresql_objects_users__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+postgresql_objects_groups: |-
+  {{
+    query('vars',
+      *(query('varnames', '^postgresql_objects_groups__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+postgresql_objects_databases: |-
+  {{
+    query('vars',
+      *(query('varnames', '^postgresql_objects_databases__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+postgresql_objects_privileges: |-
+  {{
+    query('vars',
+      *(query('varnames', '^postgresql_objects_privileges__.*') | sort)
     ) | sum(start=[])
   }}
