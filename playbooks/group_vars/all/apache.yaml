@@ -69,6 +69,10 @@ apache2__mods__ssl:
       {{ 'enabled' if apache2__use_ssl else 'present' }}
 
 apache2__conf__ssl:
+  dehydrated:
+    # Part of dehydrated-apache2 package.
+    state: |-
+      {{ 'enabled' if dehydrated__enable else 'present' }}
   md:
     state: |-
       {{ 'enabled' if apache2__use_ssl and apache2__use_md else 'absent' }}
