@@ -1,0 +1,44 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for postgresql role.
+# =============================================================================
+
+postgresql__enable: false
+
+postgresql_flavor: apt
+
+# From Debian defaults:
+# Allow replication connections from localhost, by a user with the
+# replication privilege.
+postgresql_pg_hba_conf__00_replication:
+ - local replication all peer
+ - host replication all 127.0.0.1/32 {{ postgresql_default_auth_method }}
+ - host replication all ::1/128 {{ postgresql_default_auth_method }}
+
+postgresql_pg_hba_conf__01_trusted_networks: |-
+  {% set result = [] %}
+  {% for net in trusted_networks %}
+  {% set _ = result.append(
+    'host all all %s %s' % (net, postgresql_default_auth_method)) %}
+  {% endfor %}
+  {{ result }}
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+postgresql_conf: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^postgresql_conf__.*') | sort)
+      )
+    )
+  }}
+
+postgresql_pg_hba_conf: |-
+  {{
+    query('vars',
+      *(query('varnames', '^postgresql_pg_hba_conf__.*') | sort)
+    ) | sum(start=[])
+  }}

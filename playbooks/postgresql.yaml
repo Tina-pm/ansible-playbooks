@@ -1,0 +1,14 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Install and configure PostgreSQL object-relational SQL database.
+# =============================================================================
+
+- name: Install and configure PostgreSQL object-relational SQL database
+  hosts: '{{ target_hosts | d("all") }}'
+  become: true
+  gather_facts: true
+  roles:
+    - role: tina_pm.third_party.postgresql
+      when: postgresql__enable
+      tags: postgresql
