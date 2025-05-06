@@ -29,6 +29,10 @@ apache2__default_ssl_cert_path: |-
 # Force HTTPS redirects in the default site.
 apache2__default_site_force_ssl: '{{ apache2__default_ssl_enable }}'
 
+# Rewrite request IPs when received from a reverse proxy using one of these
+# addresses.
+apache2__remoteip_from_proxies: []
+
 # Generated templates
 # -----------------------------------------------------------------------------
 
@@ -106,6 +110,33 @@ apache2__sites__ssl:
         SSLCertificateChainFile {{ apache2__default_ssl_cert_path }}/chain.pem
       {% endif %}
       </VirtualHost>
+
+apache2__mods__remoteip:
+  remoteip:
+    state: |-
+      {{ 'enabled' if apache2__remoteip_from_proxies else 'present' }}
+
+apache2__conf__remoteip:
+  # Configuration to get the client IP from the X-Forwarded-For header.
+  reverse_proxy:
+    state: |-
+      {{ 'enabled' if apache2__remoteip_from_proxies else 'absent' }}
+    src: |
+      {% set vhost_combined_fmt =
+        '%v:%p %a %l %u %t "%r" %>s %O "%{Referer}i" "%{User-Agent}i"' %}
+      {% set combined_fmt =
+        '%a %l %u %t "%r" %>s %O "%{Referer}i" "%{User-Agent}i"' %}
+      {% set common_fmt = '%a %l %u %t "%r" %>s %O' %}
+      <IfModule mod_remoteip.c>
+        RemoteIPHeader X-Forwarded-For
+      {% for addr in apache2__remoteip_from_proxies %}
+        RemoteIPInternalProxy {{ addr }}
+      {% endfor %}
+
+        LogFormat {{ vhost_combined_fmt | to_json }} vhost_combined
+        LogFormat {{ combined_fmt | to_json }} combined
+        LogFormat {{ common_fmt | to_json }} common
+      </IfModule>
 
 # Agregation of custom configuration using var prefixes
 # -----------------------------------------------------------------------------
