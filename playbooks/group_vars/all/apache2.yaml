@@ -29,6 +29,10 @@ apache2__default_ssl_cert_path: |-
 # Force HTTPS redirects in the default site.
 apache2__default_site_force_ssl: '{{ apache2__default_ssl_enable }}'
 
+# Rewrite request IPs when received from a reverse proxy using one of these
+# addresses.
+apache2__remoteip_from_proxies: []
+
 # Generated templates
 # -----------------------------------------------------------------------------
 
@@ -69,6 +73,10 @@ apache2__mods__ssl:
       {{ 'enabled' if apache2__use_ssl else 'present' }}
 
 apache2__conf__ssl:
+  dehydrated:
+    # Part of dehydrated-apache2 package.
+    state: |-
+      {{ 'enabled' if dehydrated__enable else 'present' }}
   md:
     state: |-
       {{ 'enabled' if apache2__use_ssl and apache2__use_md else 'absent' }}
@@ -85,8 +93,11 @@ apache2__sites__ssl:
     src: |
       {% if apache2__default_ssl_uses_md %}
       MDomain {{ host_fqdn }}
-      {% endif %}
 
+      {% else %}
+      {# Do not load the vhost if the certificate is not yet present #}
+      <IfFile {{ apache2__default_ssl_cert_path }}/cert.pem>
+      {% endif %}
       <VirtualHost *:443>
         ServerName {{ host_fqdn }}
         ServerAdmin webmaster@{{ domain_name }}
@@ -96,12 +107,40 @@ apache2__sites__ssl:
         CustomLog ${APACHE_LOG_DIR}/access.log combined
 
         SSLEngine On
-      {% if not apache2__default_ssl_uses_md %}
-        SSLCertificateFile      {{ apache2__default_ssl_cert_path }}/cert.pem
-        SSLCertificateKeyFile   {{ apache2__default_ssl_cert_path }}/privkey.pem
+        SSLCertificateFile {{ apache2__default_ssl_cert_path }}/cert.pem
+        SSLCertificateKeyFile {{ apache2__default_ssl_cert_path }}/privkey.pem
         SSLCertificateChainFile {{ apache2__default_ssl_cert_path }}/chain.pem
-      {% endif %}
       </VirtualHost>
+      {% if not apache2__default_ssl_uses_md %}
+      </IfFile>
+      {% endif %}
+
+apache2__mods__remoteip:
+  remoteip:
+    state: |-
+      {{ 'enabled' if apache2__remoteip_from_proxies else 'present' }}
+
+apache2__conf__remoteip:
+  # Configuration to get the client IP from the X-Forwarded-For header.
+  reverse_proxy:
+    state: |-
+      {{ 'enabled' if apache2__remoteip_from_proxies else 'absent' }}
+    src: |
+      {% set vhost_combined_fmt =
+        '%v:%p %a %l %u %t "%r" %>s %O "%{Referer}i" "%{User-Agent}i"' %}
+      {% set combined_fmt =
+        '%a %l %u %t "%r" %>s %O "%{Referer}i" "%{User-Agent}i"' %}
+      {% set common_fmt = '%a %l %u %t "%r" %>s %O' %}
+      <IfModule mod_remoteip.c>
+        RemoteIPHeader X-Forwarded-For
+      {% for addr in apache2__remoteip_from_proxies %}
+        RemoteIPInternalProxy {{ addr }}
+      {% endfor %}
+
+        LogFormat {{ vhost_combined_fmt | to_json }} vhost_combined
+        LogFormat {{ combined_fmt | to_json }} combined
+        LogFormat {{ common_fmt | to_json }} common
+      </IfModule>
 
 # Agregation of custom configuration using var prefixes
 # -----------------------------------------------------------------------------
