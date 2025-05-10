@@ -37,6 +37,9 @@
 - name: Install and configure GLAuth fast and lightweight LDAP server
   import_playbook: ./glauth.yaml
 
+- name: Install and configure PostgreSQL object-relational SQL database
+  import_playbook: ./postgresql.yaml
+
 - name: Install and configure Apache web server
   import_playbook: ./apache2.yaml
 
