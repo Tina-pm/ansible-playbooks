@@ -13,7 +13,11 @@ tinc__local_cache: '{{ inventory_dir }}/.cache'
 
 # Export the VPN interface addresses as single-host subnets.
 tinc__vpn_local_subnets__00_vpn_addresses: |-
-  {{ tinc__vpn_addresses | ipaddr('address') | ipaddr('host') }}
+  {{
+    tinc__vpn_addresses |
+    ansible.utils.ipaddr('address') |
+    ansible.utils.ipaddr('host')
+  }}
 
 # Extra configuration variables.
 # -----------------------------------------------------------------------------
