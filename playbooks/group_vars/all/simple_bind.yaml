@@ -17,19 +17,277 @@ simple_bind__options__base:
     - port: 53
       match_list: [any]
 
-simple_bind__views__base:
+# Configurable settings for these templates.
+# -----------------------------------------------------------------------------
+
+# IP address masks to add to the `internals` ACL.
+simple_bind__internal_acl: '{{ internal_networks }}'
+# If true, define `internal` and `external` views.
+simple_bind__use_split_views: false
+# If true, allow recursion to all clients.
+simple_bind__open_resolver: false
+# If true, add empty reverse zones for RFC-1918 (private) IP addresses.
+simple_bind__add_rfc1918_zones: false
+
+# List of inventory hosts to configure as primary servers.
+simple_bind__primary_servers: []
+# List of inventory hosts to configure as secondary servers and added to the
+# `secondaries` ACL.
+simple_bind__secondary_servers: []
+# List of FQDNs of external servers allowed to initiate zone transfers and added
+# to the `secondaries` ACL.
+simple_bind__ext_secondary_servers: []
+
+# Host variable names to extract FQDN and IP addresses for inventory hosts.
+simple_bind__inventory_fqdn_from: host_fqdn
+simple_bind__inventory_external_ipv4_from: pubnet_host
+simple_bind__inventory_external_ipv6_from: pubnet6_host
+simple_bind__inventory_internal_ipv4_from: privnet_host
+simple_bind__inventory_internal_ipv6_from: privnet6_host
+
+# Simplified management of zones
+# -----------------------------------------------------------------------------
+
+# When using these "managed" zones, templates are passed the following
+# variables:
+#
+# * `SOA`: SOA record parameters, not a complete RR; use as:
+#   `@ SOA primary_ns admin.email ( {{ SOA }} )`
+# * `HOSTS`: Host information directory, indexed by view, zone, and inventory
+#   hostname. The inner dictionary contains `fqdn`, `ip`, and `ip6` keys.
+#   Example of use:
+#   `{{ HOSTS[VIEW].myhost.fqdn }} A {{ HOSTS[VIEW].myhost.ip }}`
+# * `HOST_RRS`: Ready to use forward and reverse RRs for inventory hosts,
+#   contained in nested dictionaries indexed by view and zone. Example of use:
+#   `{{ HOST_RRS[VIEW][ZONE] }}`
+#
+# Note: IP addresses are retrieved from private/public address fields depending
+# on the view in use (defaulting to public when not using split views).
+#
+# Additionaly, the `simple_bind` role provides these variables to all zones:
+# * `ZONE`: zone name including trailing dot(`.`).
+# * `VIEW`: view name.
+
+# Base directory where zone files/templates are stored. Zone files/templates are
+# expected to be named `<base dir>/<view>/db.<zone>` if split views are used,
+# or `<base dir>/db.<zone>` otherwise.
+simple_bind__managed_zones_source_dir: '{{ inventory_dir }}/files/bind'
+
+# List of simplified zone definitions that are used to generate configurations
+# for primary and secondary servers.
+simple_bind__managed_zones: []
+# Configuration parameters to apply to all managed zones.
+simple_bind__managed_zones_primary_config: {}
+simple_bind__managed_zones_secondary_config: {}
+
+# Dictionary with SOA parameters to populate the `SOA` template variable.
+simple_bind__managed_zones_soa: {}
+
+# List of inventory hostnames to include in the `HOST_RRS` template variable.
+simple_bind__managed_zones_include_hosts: |-
+  {{ groups.site | default(groups.all) | sort }}
+
+# Generated templates
+# -----------------------------------------------------------------------------
+
+simple_bind__acls__00_auto:
+  internals: |-
+    {{ internal_networks + ['127/8', '::1/128'] }}
+  secondaries: |-
+    {% set hostaddrs = (simple_bind__secondary_servers or []) |
+      map('extract', _sbind_inv_hosts.ext) %}
+    {% set hosts4 = hostaddrs | map(attribute='ip4') %}
+    {% set hosts6 = hostaddrs | map(attribute='ip6') %}
+    {% set ext_names = simple_bind__ext_secondary_servers or [] %}
+    {% set ext_hosts4 = query('community.dns.lookup', *ext_names, type='A') %}
+    {% set ext_hosts6 = query('community.dns.lookup', *ext_names, type='AAAA')
+    %}
+    {{
+      (hosts4 + hosts6 + ext_hosts4 + ext_hosts6) | select('defined')
+    }}
+
+simple_bind__views__00_auto: |-
+  {{
+    _sbind_views_split if simple_bind__use_split_views else _sbind_views_default
+  }}
+
+simple_bind__primary_zones__00_managed: |-
+  {% set result = [] %}
+  {% if inventory_hostname in simple_bind__primary_servers %}
+  {% for conf in simple_bind__managed_zones %}
+  {% set src = (
+      simple_bind__managed_zones_source_dir,
+      conf.view if simple_bind__use_split_views,
+      'db.' + conf.zone,
+    ) | select | ansible.builtin.path_join
+  %}
+  {% set _ = result.append(
+    dict(src=src) |
+    combine(_sbind_managed_zones_primary_config) |
+    combine(simple_bind__managed_zones_primary_config, recursive=True) |
+    combine(conf, recursive=True)
+  ) %}
+  {% endfor %}
+  {% endif %}
+  {{ result }}
+
+simple_bind__secondary_zones__00_managed: |-
+  {% set result = [] %}
+  {% if inventory_hostname in simple_bind__secondary_servers %}
+  {% for conf in simple_bind__managed_zones %}
+  {% set hostaddrs = simple_bind__primary_servers | map('extract',
+    _sbind_inv_hosts.int if conf.view == 'internal' else _sbind_inv_hosts.ext)
+  %}
+  {% set primaries =
+    ((hostaddrs | map(attribute='ip4')) + (hostaddrs | map(attribute='ip6'))) |
+    select('defined')
+  %}
+  {% set _ = result.append(
+    (_sbind_managed_zones_secondary_config) |
+    combine(simple_bind__managed_zones_secondary_config, recursive=True) |
+    combine(dict(zone=conf.zone, view=conf.view, primaries=primaries))
+  ) %}
+  {% endfor %}
+  {% endif %}
+  {{ result }}
+
+_sbind_inv_hosts: |-
+  {% set result = dict(int={}, ext={}) %}
+  {% for hname, hvars in hostvars.items() %}
+  {% set fqdn = hvars[simple_bind__inventory_fqdn_from] | d() %}
+  {% if fqdn %}
+  {% set _ = result.int.__setitem__(hname, {
+    'fqdn': fqdn if fqdn.endswith('.') else fqdn + '.',
+    'ip4': hvars[simple_bind__inventory_internal_ipv4_from] | d(),
+    'ip6': hvars[simple_bind__inventory_internal_ipv6_from] | d(),
+  }) %}
+  {% set _ = result.ext.__setitem__(hname, {
+    'fqdn': fqdn if fqdn.endswith('.') else fqdn + '.',
+    'ip4': hvars[simple_bind__inventory_external_ipv4_from] | d(),
+    'ip6': hvars[simple_bind__inventory_external_ipv6_from] | d(),
+  }) %}
+  {% endif %}
+  {% endfor %}
+  {{ result }}
+
+_sbind_views_default:
   - name: default
-    match_clients:
-      - any
-    allow_transfer:
-      - any
+    match_clients: [any]
+    allow_transfer: [secondaries]
     recursion: true
-    allow_recursion:
-      - localhost
-      - localnets
+    allow_recursion: |-
+      {{ ['any'] if simple_bind__open_resolver else ['internal'] }}
+    includes: |-
+      {{
+        ['named.conf.default-zones'] +
+        (['zones.rfc1918'] if simple_bind__add_rfc1918_zones else [])
+      }}
+
+_sbind_views_split:
+  - name: external
+    match_clients: ['! internals', any]
+    allow_transfer: [secondaries]
+    recursion: '{{ simple_bind__open_resolver | bool }}'
+
+  - name: internal
+    match_clients: [internals]
+    allow_transfer: [internals]
+    recursion: true
+    allow_recursion: [internals]
     includes:
       - named.conf.default-zones
-      - zones.rfc1918
+
+_sbind_managed_zones_soa_default:
+  serial: 1
+  refresh: 10800
+  retry: 3600
+  expire: 604800
+  negcttl: 10800
+
+_sbind_managed_zones_widths:
+  name: 15
+  rtype: 7
+
+_sbind_managed_zones_primary_config:
+  src_type: template
+  template_vars:
+    SOA: |-
+      {% set soa = _sbind_managed_zones_soa_default |
+        combine(simple_bind__managed_zones_soa or {}) %}
+      {{
+        (soa.serial, soa.refresh, soa.retry, soa.expire, soa.negcttl) |
+        map('string') | join(' ')
+      }}
+
+    HOSTS: |-
+      {% set result = {} %}
+      {% for view in simple_bind__views %}
+      {% set hostdir = _sbind_inv_hosts.int if view.name == 'internal' else
+        _sbind_inv_hosts.ext %}
+      {% for hname, hinfo in hostdir.items() %}
+      {% set _ = result.setdefault(view.name, {}).__setitem__(hname, {
+        'fqdn': hinfo.fqdn + '.',
+        'ip4': hinfo.ip4,
+        'ip6': hinfo.ip6,
+      }) %}
+      {% endfor %}
+      {% endfor %}
+      {{ result }}
+
+    HOST_RRS: |-
+      {% set result = {} %}
+      {% set widths = _sbind_managed_zones_widths %}
+      {% for conf in simple_bind__managed_zones %}
+      {% set view = conf.view | d('default') %}
+      {% set hostdir = _sbind_inv_hosts.int if view == 'internal' else
+        _sbind_inv_hosts.ext %}
+      {% set zone = conf.zone if conf.zone.endswith('.') else conf.zone + '.' %}
+      {% set zsuffix = '.' + zone %}
+      {% set vzres = [] %}
+      {# #}
+      {% for hname in simple_bind__managed_zones_include_hosts or [] %}
+      {% set fqdn = hostdir[hname].fqdn | d('') %}
+      {% set addr4 = hostdir[hname].ip4 %}
+      {% set addr6 = hostdir[hname].ip6 %}
+      {# #}
+      {% if fqdn and addr4 %}
+      {% if fqdn.endswith(zsuffix) %}
+      {% set _ = vzres.append('%s %s %s' % (
+        fqdn.removesuffix(zsuffix).ljust(widths.name), 'A'.ljust(widths.rtype),
+        addr4))
+      %}
+      {% endif %}
+      {% set ptr4 = addr4 | community.dns.reverse_pointer %}
+      {% if ptr4.endswith(zsuffix) %}
+      {% set _ = vzres.append('%s %s %s' % (
+        ptr4.removesuffix(zsuffix).ljust(widths.name),
+        'PTR'.ljust(widths.rtype), fqdn))
+      %}
+      {% endif %}
+      {% endif %}
+      {# #}
+      {% if fqdn and addr6 %}
+      {% if fqdn.endswith(zsuffix) %}
+      {% set _ = vzres.append('%s %s %s' % (
+        fqdn.removesuffix(zsuffix).ljust(widths.name),
+        'AAAA'.ljust(widths.rtype), addr6))
+      %}
+      {% endif %}
+      {% set ptr6 = addr6 | community.dns.reverse_pointer %}
+      {% if ptr6.endswith(zsuffix) %}
+      {% set _ = vzres.append('%s %s %s' % (
+        ptr6.removesuffix(zsuffix).ljust(widths.name),
+        'PTR'.ljust(widths.rtype), fqdn))
+      %}
+      {% endif %}
+      {% endif %}
+      {% endfor %}
+      {% set _ =
+        result.setdefault(view, {}).setdefault(zone, vzres | join('\n')) %}
+      {% endfor %}
+      {{ result }}
+
+_sbind_managed_zones_secondary_config: {}
 
 # Agregation of custom configuration using var prefixes
 # -----------------------------------------------------------------------------
