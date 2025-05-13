@@ -7,6 +7,7 @@
 postgresql__enable: false
 
 postgresql_flavor: apt
+postgresql_install_psycopg2: true
 
 # From Debian defaults:
 # Allow replication connections from localhost, by a user with the
@@ -26,6 +27,13 @@ postgresql_pg_hba_conf__01_trusted_networks: |-
 
 # Agregation of custom configuration using var prefixes
 # -----------------------------------------------------------------------------
+
+postgresql_install_extra: |-
+  {{
+    query('vars',
+      *(query('varnames', '^postgresql_install_extra__.*') | sort)
+    ) | sum(start=[])
+  }}
 
 postgresql_conf: |-
   {{
@@ -61,6 +69,13 @@ postgresql_objects_databases: |-
   {{
     query('vars',
       *(query('varnames', '^postgresql_objects_databases__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+postgresql_objects_extensions: |-
+  {{
+    query('vars',
+      *(query('varnames', '^postgresql_objects_extensions__.*') | sort)
     ) | sum(start=[])
   }}
 
