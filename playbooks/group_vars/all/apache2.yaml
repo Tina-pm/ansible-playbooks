@@ -107,9 +107,11 @@ apache2__sites__ssl:
         CustomLog ${APACHE_LOG_DIR}/access.log combined
 
         SSLEngine On
+      {% if not apache2__default_ssl_uses_md %}
         SSLCertificateFile {{ apache2__default_ssl_cert_path }}/cert.pem
         SSLCertificateKeyFile {{ apache2__default_ssl_cert_path }}/privkey.pem
         SSLCertificateChainFile {{ apache2__default_ssl_cert_path }}/chain.pem
+      {% endif %}
       </VirtualHost>
       {% if not apache2__default_ssl_uses_md %}
       </IfFile>
