@@ -9,17 +9,28 @@ postgresql__enable: false
 postgresql_flavor: apt
 postgresql_install_psycopg2: true
 
-# From Debian defaults:
 # Allow replication connections from localhost, by a user with the
 # replication privilege.
-postgresql_pg_hba_conf__00_replication:
+postgresql_pg_hba_conf_allow_local_replication: true
+
+# Allow connections from all users to all databases from the specified networks.
+postgresql_pg_hba_conf_allow_all_from: '{{ trusted_networks }}'
+
+postgresql_pg_hba_conf__00_auto: |-
+  {{
+    (_postgresql_pg_hba_conf_replication if
+      postgresql_pg_hba_conf_allow_local_replication else []) +
+    (_postgresql_pg_hba_conf_allow_all_from if
+      postgresql_pg_hba_conf_allow_all_from else [])
+  }}
+
+_postgresql_pg_hba_conf_replication:
  - local replication all peer
  - host replication all 127.0.0.1/32 {{ postgresql_default_auth_method }}
  - host replication all ::1/128 {{ postgresql_default_auth_method }}
-
-postgresql_pg_hba_conf__01_trusted_networks: |-
+_postgresql_pg_hba_conf_allow_all_from: |-
   {% set result = [] %}
-  {% for net in trusted_networks %}
+  {% for net in postgresql_pg_hba_conf_allow_all_from %}
   {% set _ = result.append(
     'host all all %s %s' % (net, postgresql_default_auth_method)) %}
   {% endfor %}
