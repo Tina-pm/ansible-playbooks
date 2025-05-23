@@ -1,0 +1,68 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for `clone_repo` role.
+# =============================================================================
+
+repo_clone__enabled: false
+
+# Use the branch name of the local working copy where the inventory is stored.
+repo_clone__ref: |-
+  {{
+    lookup(
+      'ansible.builtin.pipe',
+      'git -C %s rev-parse --abbrev-ref HEAD' % inventory_dir,
+    )
+  }}
+
+# Use the URL of the upstream remote from the local working copy.
+repo_clone__repo: |-
+  {{
+    lookup(
+      'ansible.builtin.pipe',
+      'git -C %s config --get remote.%s.url' % (
+        inventory_dir, _repo_clone__local_remote),
+    )
+  }}
+
+_repo_clone__local_remote: |-
+  {{
+    lookup(
+      'ansible.builtin.pipe',
+      'git -C %s config --get branch.%s.remote || true' % (
+        inventory_dir, repo_clone__ref),
+    ) or 'origin'
+  }}
+
+repo_clone__path: /srv/git/sysadmin
+repo_clone__overwrite: false
+
+repo_clone__owner: root
+repo_clone__group: adm
+repo_clone__force_perms: false
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+repo_clone__symlinks: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^repo_clone__symlinks__.*') | sort)
+      )
+    )
+  }}
+
+repo_clone__on_change_reload: |-
+  {{
+    query('vars',
+      *(query('varnames', '^repo_clone__on_change_reload__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+repo_clone__on_change_restart: |-
+  {{
+    query('vars',
+      *(query('varnames', '^repo_clone__on_change_restart__.*') | sort)
+    ) | sum(start=[])
+  }}
