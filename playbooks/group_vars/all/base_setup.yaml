@@ -9,6 +9,7 @@ base_setup__set_hostname: '{{ host_fqdn }}'
 base_setup__disable_cloud_init: true
 base_setup__disable_resolved: true
 
+base_setup__apt_upgrade: false
 base_setup__pkg_install__base:
   - acl  # Needed for becoming a non-root user.
   - bash-completion
