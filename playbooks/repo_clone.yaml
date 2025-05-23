@@ -1,0 +1,20 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Clone a git repository for system configuration.
+# =============================================================================
+
+- name: Clone a git repository for system configuration
+  hosts: '{{ target_hosts | d("all") }}'
+  become: true
+  gather_facts: false
+  roles:
+    - role: tina_pm.playbooks.repo_clone
+      when: repo_clone__enable
+      tags: repo_clone
+      vars:
+        # SSH is needed for agent forwarding.
+        libvirt__vm_use_qemu_connection: false
+        ansible_ssh_extra_args: -A
+        # We also need to preserve the environment.
+        ansible_sudo_flags: -H -S -n -E

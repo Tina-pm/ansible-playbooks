@@ -54,3 +54,6 @@
 
 - name: Install and configure TheLounge web interface and bouncer for IRC
   import_playbook: ./thelounge.yaml
+
+- name: Clone a git repository for system configuration
+  import_playbook: ./repo_clone.yaml
