@@ -5,6 +5,9 @@
 # =============================================================================
 
 postgresql__enable: false
+postgresql__install_ferm_svc: '{{ ferm__enable | bool }}'
+postgresql__ferm_allow_from: '{{ trusted_networks }}'
+postgresql__ferm_allow_ports: 5432
 
 postgresql_flavor: apt
 postgresql_install_psycopg2: true

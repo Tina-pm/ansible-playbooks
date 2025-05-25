@@ -17,3 +17,14 @@
       become_user: postgres
       when: postgresql__enable
       tags: [postgresql, postgresql_objects]
+
+  tasks:
+    - name: Install ferm configuration
+      ansible.builtin.include_role:
+        name: tina_pm.common.ferm_svc
+      vars:
+        ferm_svc__name: postgresql
+        ferm_svc__allow_protos: tcp
+        ferm_svc__allow_from: '{{ postgresql__ferm_allow_from }}'
+        ferm_svc__allow_ports: '{{ postgresql__ferm_allow_ports }}'
+      when: postgresql__install_ferm_svc | bool
