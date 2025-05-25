@@ -83,6 +83,13 @@ postgresql_objects_databases: |-
     ) | sum(start=[])
   }}
 
+postgresql_objects_schemas: |-
+  {{
+    query('vars',
+      *(query('varnames', '^postgresql_objects_schemas__.*') | sort)
+    ) | sum(start=[])
+  }}
+
 postgresql_objects_extensions: |-
   {{
     query('vars',
@@ -94,5 +101,12 @@ postgresql_objects_privileges: |-
   {{
     query('vars',
       *(query('varnames', '^postgresql_objects_privileges__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+postgresql_objects_queries: |-
+  {{
+    query('vars',
+      *(query('varnames', '^postgresql_objects_queries__.*') | sort)
     ) | sum(start=[])
   }}

@@ -16,4 +16,4 @@
     - role: tina_pm.third_party.postgresql_objects
       become_user: postgres
       when: postgresql__enable
-      tags: postgresql
+      tags: [postgresql, postgresql_objects]
