@@ -32,12 +32,12 @@ _postgresql_pg_hba_conf_replication:
  - host replication all 127.0.0.1/32 {{ postgresql_default_auth_method }}
  - host replication all ::1/128 {{ postgresql_default_auth_method }}
 _postgresql_pg_hba_conf_allow_all_from: |-
-  {% set result = [] %}
+  {% filter from_yaml_all %}
   {% for net in postgresql_pg_hba_conf_allow_all_from %}
-  {% set _ = result.append(
-    'host all all %s %s' % (net, postgresql_default_auth_method)) %}
+  {{ 'host all all %s %s' | format(net, postgresql_default_auth_method) |
+    to_yaml(explicit_start=True) }}
   {% endfor %}
-  {{ result }}
+  {% endfilter %}
 
 # Agregation of custom configuration using var prefixes
 # -----------------------------------------------------------------------------

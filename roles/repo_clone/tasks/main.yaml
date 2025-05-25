@@ -64,13 +64,13 @@
     {{ [''] + _repo_clone_submod_paths }}
   vars:
     _repo_clone_submod_paths: |-
-      {% set result = [] %}
+      {% filter from_yaml_all | flatten %}
       {% for key, value in _repo_clone_gitmodules.config_values.items() %}
       {% if key.startswith('submodule.') and key.endswith('.path') %}
-      {% set _ = result.append(value) %}
+      {{ value | to_yaml(explicit_start=True) }}
       {% endif %}
       {% endfor %}
-      {{ result | flatten }}
+      {% endfilter %}
   loop_control:
     label: '{{ (repo_clone__path, item) | ansible.builtin.path_join }}'
 
