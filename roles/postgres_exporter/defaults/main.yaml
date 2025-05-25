@@ -1,0 +1,19 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+postgres_exporter__listen_addr: ''
+postgres_exporter__listen_port: 9187
+
+postgres_exporter__data_source_uri: /postgres?host=/run/postgresql
+postgres_exporter__data_source_user: prometheus
+postgres_exporter__data_source_pass: ''
+
+postgres_exporter__custom_queries: ~
+postgres_exporter__custom_queries_path:
+  /etc/prometheus/postgres_exporter_queries.yaml
+postgres_exporter__extra_args:
+
+# If true, install ferm configuration file.
+postgres_exporter__install_ferm_svc: false
+# Optionally limit access by a list of IP addresses/blocks.
+postgres_exporter__ferm_allow_from: ~

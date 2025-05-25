@@ -1,0 +1,56 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+- name: Install package
+  ansible.builtin.package:
+    name: prometheus-postgres-exporter
+    state: present
+
+- name: Create custom queries directory
+  ansible.builtin.file:
+    state: directory
+    path: |-
+      {{ postgres_exporter__custom_queries_path | ansible.builtin.dirname }}
+    owner: root
+    group: root
+    mode: '0755'
+  notify: _tina_restart_postgres_exporter
+  when: postgres_exporter__custom_queries
+
+- name: Configure custom queries
+  ansible.builtin.copy:
+    dest: '{{ postgres_exporter__custom_queries_path }}'
+    content: |
+      {{
+        postgres_exporter__custom_queries |
+        ansible.builtin.to_nice_yaml(indent=2, sort_keys=False)
+      }}
+    owner: root
+    group: root
+    mode: '0644'
+  notify: _tina_restart_postgres_exporter
+  when: postgres_exporter__custom_queries
+
+- name: Configure service
+  ansible.builtin.template:
+    src: default.j2
+    dest: /etc/default/prometheus-postgres-exporter
+    owner: root
+    group: root
+    mode: '0644'
+  notify: _tina_restart_postgres_exporter
+
+- name: Install ferm configuration
+  ansible.builtin.include_role:
+    name: tina_pm.common.ferm_svc
+  vars:
+    ferm_svc__name: prometheus-postgres-exporter
+    ferm_svc__allow_protos: tcp
+    ferm_svc__allow_from: '{{ postgres_exporter__ferm_allow_from }}'
+    ferm_svc__allow_ports: '{{ postgres_exporter__listen_port }}'
+  when: postgres_exporter__install_ferm_svc | bool
+
+- name: Start and enable service
+  ansible.builtin.service:
+    name: prometheus-postgres-exporter
+    state: started
+    enabled: true

@@ -7,6 +7,7 @@
 #  * Prometheus monitoring system and timeseries database.
 #  * Prometheus node exporter.
 #  * Prometheus blackbox exporter.
+#  * Prometheus PostgreSQL exporter.
 #  * Mtail monitoring data extractor from logs.
 #  * Loki log collector and analyser.
 #  * Promtail log collection agent
@@ -28,6 +29,10 @@
     - role: tina_pm.common.prometheus_blackbox_exporter
       when: blackbox_exporter__enable
       tags: [monitoring, blackbox-exporter]
+
+    - role: tina_pm.playbooks.postgres_exporter
+      when: postgres_exporter__enable
+      tags: [monitoring, postgres_exporter]
 
     - role: tina_pm.common.prometheus
       when: prometheus__enable
