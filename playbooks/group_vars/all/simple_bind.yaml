@@ -112,7 +112,7 @@ simple_bind__views__00_auto: |-
   }}
 
 simple_bind__primary_zones__00_managed: |-
-  {% set result = [] %}
+  {% filter from_yaml_all %}
   {% if inventory_hostname in simple_bind__primary_servers %}
   {% for conf in simple_bind__managed_zones %}
   {% set src = (
@@ -121,18 +121,19 @@ simple_bind__primary_zones__00_managed: |-
       'db.' + conf.zone,
     ) | select | ansible.builtin.path_join
   %}
-  {% set _ = result.append(
+  {{
     dict(src=src) |
     combine(_sbind_managed_zones_primary_config) |
     combine(simple_bind__managed_zones_primary_config, recursive=True) |
-    combine(conf, recursive=True)
-  ) %}
+    combine(conf, recursive=True) |
+    to_yaml(explicit_start=True)
+  }}
   {% endfor %}
   {% endif %}
-  {{ result }}
+  {% endfilter %}
 
 simple_bind__secondary_zones__00_managed: |-
-  {% set result = [] %}
+  {% filter from_yaml_all %}
   {% if inventory_hostname in simple_bind__secondary_servers %}
   {% for conf in simple_bind__managed_zones %}
   {% set hostaddrs = simple_bind__primary_servers | map('extract',
@@ -142,33 +143,41 @@ simple_bind__secondary_zones__00_managed: |-
     ((hostaddrs | map(attribute='ip4')) + (hostaddrs | map(attribute='ip6'))) |
     select('defined')
   %}
-  {% set _ = result.append(
+  {{
     (_sbind_managed_zones_secondary_config) |
     combine(simple_bind__managed_zones_secondary_config, recursive=True) |
-    combine(dict(zone=conf.zone, view=conf.view, primaries=primaries))
-  ) %}
+    combine(dict(zone=conf.zone, view=conf.view, primaries=primaries)) |
+    to_yaml(explicit_start=True)
+  }}
   {% endfor %}
   {% endif %}
-  {{ result }}
+  {% endfilter %}
 
 _sbind_inv_hosts: |-
-  {% set result = dict(int={}, ext={}) %}
+  {% filter from_yaml_all | combine({}, recursive=True) %}
   {% for hname, hvars in hostvars.items() %}
   {% set fqdn = hvars[simple_bind__inventory_fqdn_from] | d() %}
   {% if fqdn %}
-  {% set _ = result.int.__setitem__(hname, {
-    'fqdn': fqdn if fqdn.endswith('.') else fqdn + '.',
-    'ip4': hvars[simple_bind__inventory_internal_ipv4_from] | d(),
-    'ip6': hvars[simple_bind__inventory_internal_ipv6_from] | d(),
-  }) %}
-  {% set _ = result.ext.__setitem__(hname, {
-    'fqdn': fqdn if fqdn.endswith('.') else fqdn + '.',
-    'ip4': hvars[simple_bind__inventory_external_ipv4_from] | d(),
-    'ip6': hvars[simple_bind__inventory_external_ipv6_from] | d(),
-  }) %}
+  {% set entry = {
+    'int': {
+      hname: {
+        'fqdn': fqdn if fqdn.endswith('.') else fqdn + '.',
+        'ip4': hvars[simple_bind__inventory_internal_ipv4_from] | d(),
+        'ip6': hvars[simple_bind__inventory_internal_ipv6_from] | d(),
+      },
+    },
+    'ext': {
+      hname: {
+        'fqdn': fqdn if fqdn.endswith('.') else fqdn + '.',
+        'ip4': hvars[simple_bind__inventory_external_ipv4_from] | d(),
+        'ip6': hvars[simple_bind__inventory_external_ipv6_from] | d(),
+      },
+    },
+  } %}
+  {{ entry | to_yaml(explicit_start=True) }}
   {% endif %}
   {% endfor %}
-  {{ result }}
+  {% endfilter %}
 
 _sbind_views_default:
   - name: default
@@ -208,6 +217,8 @@ _sbind_managed_zones_widths:
   name: 15
   rtype: 7
 
+# yamllint disable-line rule:quoted-strings
+_sbind_newline: "\n"
 _sbind_managed_zones_primary_config:
   src_type: template
   template_vars:
@@ -220,22 +231,16 @@ _sbind_managed_zones_primary_config:
       }}
 
     HOSTS: |-
-      {% set result = {} %}
+      {% filter from_yaml_all | combine({}, recursive=True) %}
       {% for view in simple_bind__views %}
       {% set hostdir = _sbind_inv_hosts.int if view.name == 'internal' else
         _sbind_inv_hosts.ext %}
-      {% for hname, hinfo in hostdir.items() %}
-      {% set _ = result.setdefault(view.name, {}).__setitem__(hname, {
-        'fqdn': hinfo.fqdn + '.',
-        'ip4': hinfo.ip4,
-        'ip6': hinfo.ip6,
-      }) %}
+      {{ {view.name: hostdir} | to_yaml(explicit_start=True) }}
       {% endfor %}
-      {% endfor %}
-      {{ result }}
+      {% endfilter %}
 
     HOST_RRS: |-
-      {% set result = {} %}
+      {% filter from_yaml_all | combine({}, recursive=True) %}
       {% set widths = _sbind_managed_zones_widths %}
       {% for conf in simple_bind__managed_zones %}
       {% set view = conf.view | d('default') %}
@@ -243,7 +248,7 @@ _sbind_managed_zones_primary_config:
         _sbind_inv_hosts.ext %}
       {% set zone = conf.zone if conf.zone.endswith('.') else conf.zone + '.' %}
       {% set zsuffix = '.' + zone %}
-      {% set vzres = [] %}
+      {% set vz = namespace(res=[]) %}
       {# #}
       {% for hname in simple_bind__managed_zones_include_hosts or [] %}
       {% set fqdn = hostdir[hname].fqdn | d('') %}
@@ -252,40 +257,40 @@ _sbind_managed_zones_primary_config:
       {# #}
       {% if fqdn and addr4 %}
       {% if fqdn.endswith(zsuffix) %}
-      {% set _ = vzres.append('%s %s %s' % (
+      {% set vz.res = vz.res + ['%s %s %s' % (
         fqdn.removesuffix(zsuffix).ljust(widths.name), 'A'.ljust(widths.rtype),
-        addr4))
+        addr4)]
       %}
       {% endif %}
       {% set ptr4 = addr4 | community.dns.reverse_pointer %}
       {% if ptr4.endswith(zsuffix) %}
-      {% set _ = vzres.append('%s %s %s' % (
+      {% set vz.res = vz.res + ['%s %s %s' % (
         ptr4.removesuffix(zsuffix).ljust(widths.name),
-        'PTR'.ljust(widths.rtype), fqdn))
+        'PTR'.ljust(widths.rtype), fqdn)]
       %}
       {% endif %}
       {% endif %}
       {# #}
       {% if fqdn and addr6 %}
       {% if fqdn.endswith(zsuffix) %}
-      {% set _ = vzres.append('%s %s %s' % (
+      {% set vz.res = vz.res + ['%s %s %s' % (
         fqdn.removesuffix(zsuffix).ljust(widths.name),
-        'AAAA'.ljust(widths.rtype), addr6))
+        'AAAA'.ljust(widths.rtype), addr6)]
       %}
       {% endif %}
       {% set ptr6 = addr6 | community.dns.reverse_pointer %}
       {% if ptr6.endswith(zsuffix) %}
-      {% set _ = vzres.append('%s %s %s' % (
+      {% set vz.res = vz.res + ['%s %s %s' % (
         ptr6.removesuffix(zsuffix).ljust(widths.name),
-        'PTR'.ljust(widths.rtype), fqdn))
+        'PTR'.ljust(widths.rtype), fqdn)]
       %}
       {% endif %}
       {% endif %}
       {% endfor %}
-      {% set _ =
-        result.setdefault(view, {}).setdefault(zone, vzres | join('\n')) %}
+      {{ {view: {zone: vz.res | join(_sbind_newline)}} |
+        to_yaml(explicit_start=True) }}
       {% endfor %}
-      {{ result }}
+      {% endfilter %}
 
 _sbind_managed_zones_secondary_config: {}
 
