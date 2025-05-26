@@ -20,7 +20,7 @@
   roles:
     - role: tina_pm.common.prometheus_node_exporter
       when: node_exporter__enable
-      tags: [monitoring, node-exporter]
+      tags: [monitoring, node_exporter]
 
     - role: tina_pm.common.mtail
       when: mtail__enable
@@ -28,7 +28,7 @@
 
     - role: tina_pm.common.prometheus_blackbox_exporter
       when: blackbox_exporter__enable
-      tags: [monitoring, blackbox-exporter]
+      tags: [monitoring, blackbox_exporter]
 
     - role: tina_pm.playbooks.postgres_exporter
       when: postgres_exporter__enable
