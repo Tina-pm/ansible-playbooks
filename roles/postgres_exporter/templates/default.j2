@@ -1,0 +1,22 @@
+# {{ ansible_managed }}
+
+ARGS=" \
+  --web.listen-address={{
+    postgres_exporter__listen_addr ~ ':' ~ postgres_exporter__listen_port
+  }} \
+  {{ postgres_exporter__extra_args }}"
+
+DATA_SOURCE_URI={{
+  postgres_exporter__data_source_uri | ansible.builtin.quote
+}}
+DATA_SOURCE_USER={{
+  postgres_exporter__data_source_user | ansible.builtin.quote
+}}
+DATA_SOURCE_PASS={{
+  postgres_exporter__data_source_pass | ansible.builtin.quote
+}}
+{% if postgres_exporter__custom_queries %}
+PG_EXPORTER_EXTEND_QUERY_PATH={{
+  postgres_exporter__custom_queries_path | ansible.builtin.quote
+}}
+{% endif %}
