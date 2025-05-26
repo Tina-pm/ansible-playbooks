@@ -1,0 +1,35 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+# URL of the repository to clone.
+repo_clone__repo: ~
+
+# Reference to checkout.
+repo_clone__ref: HEAD
+
+# Path to the cloned repository.
+repo_clone__path: ~
+
+# Set the paths to the cloned repository and its submodules as "safe".
+repo_clone__set_safe_dirs: true
+
+# Discard any modified files in the cloned repository.
+repo_clone__overwrite: false
+
+# Permissions for the cloned repository.
+repo_clone__owner: root
+repo_clone__group: adm
+
+# Force permissions on existing files.
+repo_clone__force_perms: false
+
+# Dictionary of symlinks to create: mapping symlink targets to source files.
+# Relative sources are resolved relative to the repository root.
+# Parent directories of the target are created automatically.
+repo_clone__symlinks: {}
+
+# List of services to reload if the repository changed.
+repo_clone__on_change_reload: []
+
+# List of services to restart if the repository changed.
+repo_clone__on_change_restart: []

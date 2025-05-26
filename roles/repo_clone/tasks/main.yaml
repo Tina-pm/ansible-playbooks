@@ -1,0 +1,173 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+- name: Install needed packages
+  ansible.builtin.package:
+    name:
+      - git
+      - acl
+    state: present
+
+- name: Create shared directory
+  ansible.builtin.file:
+    state: directory
+    dest: '{{ repo_clone__path }}'
+    owner: '{{ repo_clone__owner }}'
+    group: '{{ repo_clone__group }}'
+    mode: u=rwX,g=rwX,o=rX
+
+- name: Set extended permissions
+  ansible.posix.acl:
+    state: present
+    path: '{{ repo_clone__path }}'
+    default: false
+    etype: group
+    entity: '{{ repo_clone__group }}'
+    permissions: rwX
+
+- name: Set default extended permissions
+  ansible.posix.acl:
+    state: present
+    path: '{{ repo_clone__path }}'
+    default: true
+    etype: group
+    entity: '{{ repo_clone__group }}'
+    permissions: rwX
+
+- name: Clone or update repository
+  ansible.builtin.git:
+    repo: '{{ repo_clone__repo }}'
+    version: '{{ repo_clone__ref }}'
+    dest: '{{ repo_clone__path }}'
+    force: '{{ repo_clone__overwrite }}'
+    umask: '0002'
+    accept_newhostkey: true
+  register: _repo_clone_git_clone
+
+- name: Find submodule paths
+  community.general.git_config_info:
+    scope: file
+    path: '{{ repo_clone__path }}/.gitmodules'
+  register: _repo_clone_gitmodules
+  # Run even in check mode.
+  check_mode: false
+
+- name: Mark repository and submodules as safe
+  community.general.git_config:
+    name: safe.directory
+    value: '{{ (repo_clone__path, item) | ansible.builtin.path_join }}'
+    add_mode: add
+    scope: system
+    state: present
+  when: repo_clone__set_safe_dirs | bool
+  loop: |-
+    {{ [''] + _repo_clone_submod_paths }}
+  vars:
+    _repo_clone_submod_paths: |-
+      {% set result = [] %}
+      {% for key, value in _repo_clone_gitmodules.config_values.items() %}
+      {% if key.startswith('submodule.') and key.endswith('.path') %}
+      {% set _ = result.append(value) %}
+      {% endif %}
+      {% endfor %}
+      {{ result | flatten }}
+  loop_control:
+    label: '{{ (repo_clone__path, item) | ansible.builtin.path_join }}'
+
+# XXX(Tina): After too much time lost, I realised ansible's implementation
+# of `chmod` and `chown` in the `file` module were causing problems when
+# applied recursively.
+- name: Force ownership on existing files
+  ansible.builtin.command:
+    argv:
+      - chown
+      - --changes
+      - -R
+      - '{{ repo_clone__owner }}:{{ repo_clone__group }}'
+      - '{{ repo_clone__path }}'
+  register: _repo_clone_chown
+  changed_when: _repo_clone_chown.stdout != ''
+  when: repo_clone__force_perms
+
+- name: Force basic permissiosn
+  ansible.builtin.command:
+    argv:
+      - chmod
+      - --changes
+      - -R
+      - u=rwX,g=rwX,o=rX
+      - '{{ repo_clone__path }}'
+  register: _repo_clone_chmod
+  changed_when: _repo_clone_chmod.stdout != ''
+  when: repo_clone__force_perms
+
+- name: Force extended permissions
+  ansible.posix.acl:
+    state: present
+    path: '{{ repo_clone__path }}'
+    default: false
+    etype: group
+    entity: '{{ repo_clone__group }}'
+    permissions: rwX
+    recurse: true
+  when: repo_clone__force_perms
+
+- name: Force default extended permissions
+  ansible.posix.acl:
+    state: present
+    path: '{{ repo_clone__path }}'
+    default: true
+    etype: group
+    entity: '{{ repo_clone__group }}'
+    permissions: rwX
+    recurse: true
+  when: repo_clone__force_perms
+
+- name: Determine if parent directories for symlinks exist
+  ansible.builtin.stat:
+    path: '{{ item }}'
+  loop: |-
+    {{
+      (repo_clone__symlinks or {}).keys() |
+      map('ansible.builtin.dirname') |
+      ansible.builtin.unique()
+    }}
+  register: _repo_clone_symlinks_parents
+
+- name: Create parent directories for symlinks
+  ansible.builtin.file:
+    state: directory
+    dest: '{{ item.item }}'
+    owner: '{{ repo_clone__owner }}'
+    group: '{{ repo_clone__group }}'
+    mode: u=rwX,g=rwX,o=rX
+  when: not item.stat.exists
+  loop: '{{ _repo_clone_symlinks_parents.results }}'
+  loop_control:
+    label: '{{ item.item }}'
+
+- name: Create symlinks to files in the repository
+  ansible.builtin.file:
+    state: link
+    src: '{{ (repo_clone__path, item.1) | ansible.builtin.path_join }}'
+    dest: '{{ item.0 }}'
+  loop: '{{ (repo_clone__symlinks or {}).items() }}'
+  loop_control:
+    label: >-
+      {{ item.0 }} ->
+      {{ (repo_clone__path, item.1) | ansible.builtin.path_join }}
+  register: _repo_clone_symlinks
+
+- name: Reload services
+  ansible.builtin.service:
+    state: reloaded
+    name: '{{ item }}'
+  when: _repo_clone_git_clone.changed or _repo_clone_symlinks.changed
+  loop: '{{ repo_clone__on_change_reload or [] }}'
+
+- name: Restart services
+  ansible.builtin.service:
+    state: restarted
+    name: '{{ item }}'
+  when: _repo_clone_git_clone.changed or _repo_clone_symlinks.changed
+  loop: '{{ repo_clone__on_change_restart or [] }}'
