@@ -27,4 +27,4 @@
         ferm_svc__allow_protos: tcp
         ferm_svc__allow_from: '{{ postgresql__ferm_allow_from }}'
         ferm_svc__allow_ports: '{{ postgresql__ferm_allow_ports }}'
-      when: postgresql__install_ferm_svc | bool
+      when: postgresql__enable and postgresql__install_ferm_svc | bool
