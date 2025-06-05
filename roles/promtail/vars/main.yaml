@@ -1,9 +1,12 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 ---
 
-_promtail_clients_from_urls: |
-  {% set res = [] %}
+_promtail_clients_from_urls: |-
+  {% filter from_yaml_all %}
   {% for url in promtail__client_urls %}
-  {% set _ = res.append(promtail__client_defaults | combine(dict(url=url))) %}
+  {{
+    promtail__client_defaults | combine(dict(url=url)) |
+    to_yaml(explicit_start=True)
+  }}
   {% endfor %}
-  {{- res -}}
+  {% endfilter %}
