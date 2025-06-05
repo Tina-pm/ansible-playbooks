@@ -1,0 +1,68 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Reusable defaults and templates for postgres_exporter role.
+# =============================================================================
+
+postgres_exporter__enable: '{{ postgresql__enable }}'
+
+postgres_exporter__install_ferm_svc: '{{ ferm__enable | bool }}'
+postgres_exporter__ferm_allow_from: '{{ trusted_networks }}'
+
+# Set-up user and permissions in PostgreSQL server.
+
+postgresql_pg_hba_conf__prometheus_exporter: |-
+  {{ _pgsql_exporter_pghba_conf if postgres_exporter__enable | bool else [] }}
+_pgsql_exporter_pghba_conf:
+  - local prometheus prometheus peer
+
+postgresql_objects_users__prometheus_exporter: |-
+  {{ _pgsql_exporter_users if postgres_exporter__enable | bool else [] }}
+_pgsql_exporter_users:
+  - name: prometheus
+    quote_configuration_values: false
+    configuration:
+      search_path: prometheus, pg_catalog
+
+postgresql_objects_schemas__prometheus_exporter: |-
+  {{ _pgsql_exporter_schemas if postgres_exporter__enable | bool else [] }}
+_pgsql_exporter_schemas:
+  - name: prometheus
+    owner: prometheus
+    database: postgres
+
+postgresql_objects_queries__prometheus_exporter: |-
+  {{ _pgsql_exporter_queries if postgres_exporter__enable | bool else [] }}
+_pgsql_exporter_queries:
+  - database: postgres
+    comment: Setup privileges for prometheus user
+    query: |
+      CREATE OR REPLACE FUNCTION prometheus.f_select_pg_stat_activity()
+      RETURNS setof pg_catalog.pg_stat_activity
+      LANGUAGE sql
+      SECURITY DEFINER
+      AS $$
+        SELECT * from pg_catalog.pg_stat_activity;
+      $$;
+
+      CREATE OR REPLACE FUNCTION prometheus.f_select_pg_stat_replication()
+      RETURNS setof pg_catalog.pg_stat_replication
+      LANGUAGE sql
+      SECURITY DEFINER
+      AS $$
+        SELECT * from pg_catalog.pg_stat_replication;
+      $$;
+
+      CREATE OR REPLACE VIEW prometheus.pg_stat_replication
+      AS
+        SELECT * FROM prometheus.f_select_pg_stat_replication();
+
+      CREATE OR REPLACE VIEW prometheus.pg_stat_activity
+      AS
+        SELECT * FROM prometheus.f_select_pg_stat_activity();
+
+      GRANT SELECT ON prometheus.pg_stat_replication TO prometheus;
+      GRANT SELECT ON prometheus.pg_stat_activity TO prometheus;
+
+      -- Trick the ansible module into thinking there were no changes;
+      SELECT 1;
