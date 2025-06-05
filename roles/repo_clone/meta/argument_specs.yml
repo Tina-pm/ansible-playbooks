@@ -1,0 +1,69 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+argument_specs:
+  main:
+    short_description: Clone a git repository for system configuration
+    description:
+      Clones a git repository and sets extended permissions to allow usage by
+      multiple users and simplify keeping system configuration files in git.
+    author:
+      - Martina Ferrari
+    options:
+      repo_clone__repo:
+        description: URL of the repository to clone.
+        type: str
+        required: true
+
+      repo_clone__ref:
+        description: Reference to checkout (branch, tag, commit ID, or C(HEAD)).
+        type: str
+        default: HEAD
+
+      repo_clone__path:
+        description: Path to the cloned repository.
+        type: str
+        required: true
+
+      repo_clone__set_safe_dirs:
+        description:
+          Set the paths to the cloned repository and its submodules as "safe".
+        type: bool
+        default: true
+
+      repo_clone__overwrite:
+        description: Discard any modified files in the cloned repository.
+        type: bool
+        default: false
+
+      repo_clone__owner:
+        description: Name of the user that should own the cloned repository.
+        type: str
+        default: root
+
+      repo_clone__group:
+        description: Name of the group that should own the cloned repository.
+        type: str
+        default: adm
+
+      repo_clone__force_perms:
+        description: Force permissions on existing files.
+        type: bool
+        default: false
+
+      repo_clone__symlinks:
+        description:
+          - Dictionary of symlinks to create, mapping symlink targets to source
+            files.
+          - Relative sources are resolved relative to the repository root.
+          - Parent directories of the target are created automatically.
+        type: dict
+
+      repo_clone__on_change_reload:
+        description: List of services to reload if the repository changed.
+        type: list
+        elements: str
+
+      repo_clone__on_change_restart:
+        description: List of services to restart if the repository changed.
+        type: list
+        elements: str
