@@ -60,6 +60,7 @@
     scope: system
     state: present
   when: repo_clone__set_safe_dirs | bool
+  # noqa: jinja[invalid]
   loop: |-
     {{ [''] + _repo_clone_submod_paths }}
   vars:
