@@ -4,7 +4,7 @@
 # Reusable defaults and templates for `clone_repo` role.
 # =============================================================================
 
-repo_clone__enabled: false
+repo_clone__enable: false
 
 # Use the branch name of the local working copy where the inventory is stored.
 repo_clone__ref: |-
