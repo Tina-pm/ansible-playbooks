@@ -49,7 +49,7 @@
     group: grafana
     mode: '0640'
   notify: _tina_restart_grafana
-  when: grafana__datasources_prometheus
+  when: grafana__datasources_prometheus is ansible.builtin.truthy
 
 - name: Provision loki data source
   ansible.builtin.template:
@@ -59,7 +59,7 @@
     group: grafana
     mode: '0640'
   notify: _tina_restart_grafana
-  when: grafana__datasources_loki
+  when: grafana__datasources_loki is ansible.builtin.truthy
 
 - name: Create dashboard provider
   ansible.builtin.template:
@@ -69,7 +69,7 @@
     group: grafana
     mode: '0644'
   notify: _tina_restart_grafana
-  when: grafana__dashboards
+  when: grafana__dashboards is ansible.builtin.truthy
 
 - name: Create dashboards directory
   ansible.builtin.file:
@@ -78,7 +78,7 @@
     owner: grafana
     group: grafana
     mode: '0755'
-  when: grafana__dashboards
+  when: grafana__dashboards is ansible.builtin.truthy
 
 - name: Provision dashboards
   ansible.builtin.copy:
@@ -89,4 +89,4 @@
     mode: '0644'
   loop: '{{ grafana__dashboards }}'
   notify: _tina_restart_grafana
-  when: grafana__dashboards
+  when: grafana__dashboards is ansible.builtin.truthy

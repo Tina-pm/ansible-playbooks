@@ -117,18 +117,18 @@ _netconfig__interfaces: |-
     allow: auto
   {% if pubnet_hwaddr %}
     udev_persistent_rule:
-      address: '{{ pubnet_hwaddr }}'
+      address: {{ pubnet_hwaddr }}
   {% endif %}
     config:
 
   {% if pubnet_host %}
       inet:
         method: static
-        address: '{{ pubnet_net }}'
-        gateway: '{{ pubnet_gw or None }}'
+        address: {{ pubnet_net }}
+        gateway: {{ pubnet_gw | to_yaml }}
   {% if pubnet_gw and
     not (pubnet_net | ansible.utils.network_in_network(pubnet_gw)) %}
-        pointopoint: '{{ pubnet_gw }}'
+        pointopoint: {{ pubnet_gw }}
   {% endif %}
         pre-up: /sbin/ip addr flush dev $IFACE || true
   {% if pubnet_routed_nets %}
@@ -146,8 +146,8 @@ _netconfig__interfaces: |-
   {% if pubnet6_host %}
       inet6:
         method: static
-        address: '{{ pubnet6_host }}/{{ pubnet6_mask }}'
-        gateway: '{{ pubnet6_gw or None }}'
+        address: {{ pubnet6_host }}/{{ pubnet6_mask }}
+        gateway: {{ pubnet6_gw | to_yaml }}
         autoconf: 0
         accept_ra: 0
   {% if pubnet6_routed_nets %}
@@ -169,18 +169,18 @@ _netconfig__interfaces: |-
     allow: auto
   {% if privnet_hwaddr %}
     udev_persistent_rule:
-      address: '{{ privnet_hwaddr }}'
+      address: {{ privnet_hwaddr }}
   {% endif %}
     config:
 
   {% if privnet_host %}
       inet:
         method: static
-        address: '{{ privnet_net }}'
-        gateway: '{{ privnet_gw or None }}'
+        address: {{ privnet_net }}
+        gateway: {{ privnet_gw | to_yaml }}
   {% if privnet_gw and
     not (privnet_net | ansible.utils.network_in_network(privnet_gw)) %}
-        pointopoint: '{{ privnet_gw }}'
+        pointopoint: {{ privnet_gw }}
   {% endif %}
         pre-up: /sbin/ip addr flush dev $IFACE || true
   {% if privnet_routed_nets %}
@@ -198,8 +198,8 @@ _netconfig__interfaces: |-
   {% if privnet6_host %}
       inet6:
         method: static
-        address: '{{ privnet6_host }}/{{ privnet6_mask }}'
-        gateway: '{{ privnet6_gw or None}}'
+        address: {{ privnet6_host }}/{{ privnet6_mask }}
+        gateway: {{ privnet6_gw | to_yaml }}
         autoconf: 0
         accept_ra: 0
   {% if privnet6_routed_nets %}

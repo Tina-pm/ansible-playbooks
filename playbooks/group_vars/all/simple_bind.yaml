@@ -92,7 +92,7 @@ simple_bind__managed_zones_include_hosts: |-
 
 simple_bind__acls__00_auto:
   internals: |-
-    {{ internal_networks + ['127/8', '::1/128'] }}
+    {{ internal_networks + ['127.0.0.0/8', '::1/128'] }}
   secondaries: |-
     {% set hostaddrs = (simple_bind__secondary_servers or []) |
       map('extract', _sbind_inv_hosts.ext) %}
