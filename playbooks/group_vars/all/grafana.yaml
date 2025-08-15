@@ -17,7 +17,7 @@ grafana__auth_ldap__enabled: '{{ _grafana_use_ldap }}'
 grafana__auth_basic__enabled: '{{ not _grafana_use_ldap }}'
 
 # Use LDAP if GLAuth is enabled.
-_grafana_use_ldap: '{{ glauth__enable | d() | bool }}'
+_grafana_use_ldap: '{{ glauth__enable | d(False) | bool }}'
 # Avoid errors.
 _grafana_ldap_svc: '{{ (glauth__service_ldap | d()) or {} }}'
 _grafana_ldaps_svc: '{{ (glauth__service_ldaps | d()) or {} }}'
