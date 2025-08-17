@@ -43,11 +43,11 @@ tinc__expose_local_networks: true
 # -----------------------------------------------------------------------------
 
 tinc__public_addresses: |-
-  {{ _tinc_nc_public_addr if tinc__use_netconfig else [] }}
+  {{ _tinc_nc_public_addr if tinc__enable and tinc__use_netconfig else [] }}
 tinc__vpn_addresses__00_netconfig: |-
-  {{ _tinc_nc_vpn_addr if tinc__use_netconfig else [] }}
+  {{ _tinc_nc_vpn_addr if tinc__enable and tinc__use_netconfig else [] }}
 tinc__vpn_extra_subnets__localnet: |-
-  {{ local_networks if tinc__expose_local_networks | bool else [] }}
+  {{ local_networks if tinc__enable and tinc__expose_local_networks else [] }}
 
 _tinc_nc_public_addr_varnames: |-
   {{
