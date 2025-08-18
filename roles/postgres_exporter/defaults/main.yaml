@@ -11,7 +11,7 @@ postgres_exporter__data_source_pass: ''
 postgres_exporter__custom_queries: ~
 postgres_exporter__custom_queries_path:
   /etc/prometheus/postgres_exporter_queries.yaml
-postgres_exporter__extra_args:
+postgres_exporter__extra_args: ''
 
 # If true, install ferm configuration file.
 postgres_exporter__install_ferm_svc: false
