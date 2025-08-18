@@ -7,7 +7,7 @@
 - name: Install and configure tinc VPN daemon
   hosts: '{{ target_hosts | d("all") }}'
   become: true
-  gather_facts: true
+  gather_facts: false
   roles:
     - role: tina_pm.third_party.tinc
       when: tinc__enable
