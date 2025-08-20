@@ -14,7 +14,7 @@
     group: root
     mode: '0755'
   notify: _tina_restart_postgres_exporter
-  when: postgres_exporter__custom_queries
+  when: postgres_exporter__custom_queries is ansible.builtin.truthy
 
 - name: Configure custom queries
   ansible.builtin.copy:
@@ -28,7 +28,7 @@
     group: root
     mode: '0644'
   notify: _tina_restart_postgres_exporter
-  when: postgres_exporter__custom_queries
+  when: postgres_exporter__custom_queries is ansible.builtin.truthy
 
 - name: Configure service
   ansible.builtin.template:
