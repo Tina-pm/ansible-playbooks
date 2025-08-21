@@ -27,4 +27,4 @@
     regexp: '^IP[ =]'
     state: present
   notify: _tina_update_initramfs
-  when: dropbear_initramfs__ipconfig
+  when: dropbear_initramfs__ipconfig is ansible.builtin.truthy
