@@ -33,6 +33,20 @@ apache2__default_site_force_ssl: '{{ apache2__default_ssl_enable }}'
 # addresses.
 apache2__remoteip_from_proxies: []
 
+# Simple reverse proxy configuration.
+# -----------------------------------------------------------------------------
+
+apache2__simple_proxy_uses_md: '{{ apache2__use_md }}'
+# apache2__simple_proxy__mysite:
+#   site:
+#     domain: mysite.com
+#     aliases:
+#       - site2.com
+#     backend: http://localhost:9000
+#     proxy_args: timeout=3600
+#     use_md: false
+#     ssl_cert_path: /etc/ssl/private
+
 # Generated templates
 # -----------------------------------------------------------------------------
 
@@ -144,6 +158,96 @@ apache2__conf__remoteip:
         LogFormat {{ common_fmt | to_json }} common
       </IfModule>
 
+apache2__mods__simple_proxy: |-
+  {{
+    _a2_mods_simple_proxy if apache2__simple_proxy is ansible.builtin.truthy
+    else {}
+  }}
+apache2__sites__simple_proxy: |-
+  {{
+    _a2_sites_simple_proxy if apache2__simple_proxy is ansible.builtin.truthy
+    else {}
+  }}
+apache2__logdirs__simple_proxy: |-
+  {{
+    _a2_logdirs_simple_proxy if apache2__simple_proxy is ansible.builtin.truthy
+    else {}
+  }}
+
+_a2_mods_simple_proxy:
+  headers:
+    state: enabled
+  proxy_http:
+    state: enabled
+
+_a2_sites_simple_proxy: |-
+  {% set ns = namespace(sites={}) %}
+  {% for name, config in apache2__simple_proxy.items() %}
+  {% set cert_path = config.get(
+    'ssl_cert_path', apache2__default_ssl_cert_path) %}
+  {% set use_md = config.get('use_md', apache2__simple_proxy_uses_md) %}
+  {% set siteconf %}
+  {% if use_md %}
+  MDomain {{ config.domain }}
+  {% else %}
+  {# Do not load the vhost if the certificate is not yet present #}
+  <IfFile {{ cert_path }}/cert.pem>
+  {% endif %}
+  <VirtualHost *:443>
+    ServerName {{ config.domain }}
+  {% if config.get('aliases') %}
+    ServerAlias {{ ' '.join(config.aliases) }}
+  {% endif %}
+
+    SSLEngine on
+  {% if not use_md %}
+    SSLCertificateFile {{ cert_path }}/cert.pem
+    SSLCertificateKeyFile {{ cert_path }}/privkey.pem
+    SSLCertificateChainFile {{ cert_path }}/chain.pem
+  {% endif %}
+
+    CustomLog ${APACHE_LOG_DIR}/{{ name }}/access.log combined
+    ErrorLog ${APACHE_LOG_DIR}/{{ name }}/error.log
+    CustomLog ${APACHE_LOG_DIR}/metrics.log metrics
+
+    ProxyPreserveHost On
+    ProxyVia On
+    ProxyAddHeaders On
+    RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}
+
+  {#
+    SSLProxyCheckPeerName is disabled to allow the use of a single certificate
+    on the backend.
+  #}
+  {% if config.backend.startswith('https://') %}
+    SSLProxyEngine On
+    SSLProxyCheckPeerName Off
+
+  {% endif %}
+  {% if config.get('proxy_args') %}
+    ProxyPass "/" "{{ config.backend }}" {{ config.proxy_args }}
+  {% else %}
+    ProxyPass "/" "{{ config.backend }}"
+  {% endif %}
+    ProxyPassReverse "/" "{{ config.backend }}"
+  </VirtualHost>
+  {% if not use_md %}
+  </IfFile>
+  {% endif %}
+  {% endset %}
+  {% set ns.sites = ns.sites | combine({
+    name : dict(state='enabled', src=siteconf),
+  }) %}
+  {% endfor %}
+  {{- ns.sites }}
+
+_a2_logdirs_simple_proxy: |-
+  {% set ns = namespace(sites=[]) %}
+  {% for name in apache2__simple_proxy.keys() | sort %}
+  {% set ns.sites = ns.sites + ['/var/log/apache2/' + name] %}
+  {% endfor %}
+  {{- ns.sites }}
+
 # Agregation of custom configuration using var prefixes
 # -----------------------------------------------------------------------------
 
@@ -193,4 +297,13 @@ apache2__logdirs: |-
     query('vars',
       *(query('varnames', '^apache2__logdirs__.*') | sort)
     ) | sum(start=[])
+  }}
+
+apache2__simple_proxy: |-
+  {{
+    {} | combine(
+      *query('vars',
+        *(query('varnames', '^apache2__simple_proxy__.*') | sort)
+      )
+    )
   }}
