@@ -79,7 +79,7 @@ apache2__conf__ssl:
       {{ 'enabled' if dehydrated__enable else 'present' }}
   md:
     state: |-
-      {{ 'enabled' if apache2__use_ssl and apache2__use_md else 'absent' }}
+      {{ 'enabled' if apache2__use_ssl and apache2__use_md else 'present' }}
     src: |
       MDCertificateAgreement accepted
 
