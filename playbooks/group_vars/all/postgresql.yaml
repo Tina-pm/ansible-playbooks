@@ -19,6 +19,18 @@ postgresql_pg_hba_conf_allow_local_replication: true
 # Allow connections from all users to all databases from the specified networks.
 postgresql_pg_hba_conf_allow_all_from: '{{ trusted_networks }}'
 
+# Allow creating users and databases and granting access with a simple
+# configuration.
+# postgresql__simple_setup__mydb:
+#   - db: mydb
+#     user: myuser
+#     password: s3cret
+#     extensions: [postgis]
+#     allowed_hosts: [appserver]
+
+# Implementation of custom templates
+# -----------------------------------------------------------------------------
+
 postgresql_pg_hba_conf__00_auto: |-
   {{
     (_postgresql_pg_hba_conf_replication if
@@ -36,6 +48,50 @@ _postgresql_pg_hba_conf_allow_all_from: |-
   {% for net in postgresql_pg_hba_conf_allow_all_from %}
   {{ 'host all all %s %s' | format(net, postgresql_default_auth_method) |
     to_yaml(explicit_start=True) }}
+  {% endfor %}
+  {% endfilter %}
+
+postgresql_pg_hba_conf__01_simple: |-
+  {% filter from_yaml_all %}
+  {% for conf in postgresql__simple_setup %}
+  {% for host in conf.get('allowed_hosts') or [] %}
+  {% for vname, mask in (('privnet_host', 32), ('privnet6_host', 128)) %}
+  {% set addr = hostvars[host][vname] | d() %}
+  {% if addr %}
+  {{
+    'host %s %s %s/%d %s' |
+    format(conf.user, conf.db, addr, mask, postgresql_default_auth_method) |
+    to_yaml(explicit_start=True)
+  }}
+  {% endif %}
+  {% endfor %}
+  {% endfor %}
+  {% endfor %}
+  {% endfilter %}
+
+postgresql_objects_users__01_simple: |-
+  {% filter from_yaml_all %}
+  {% for conf in postgresql__simple_setup %}
+  {{
+    dict(name=conf.user, password=conf.password) |
+    to_yaml(explicit_start=True)
+  }}
+  {% endfor %}
+  {% endfilter %}
+
+postgresql_objects_databases__01_simple: |-
+  {% filter from_yaml_all %}
+  {% for conf in postgresql__simple_setup %}
+  {{ dict(name=conf.db, owner=conf.user) | to_yaml(explicit_start=True) }}
+  {% endfor %}
+  {% endfilter %}
+
+postgresql_objects_extensions__01_simple: |-
+  {% filter from_yaml_all %}
+  {% for conf in postgresql__simple_setup %}
+  {% for ext in conf.get('extensions') or [] %}
+  {{ dict(database=conf.db, name=ext) | to_yaml(explicit_start=True) }}
+  {% endfor %}
   {% endfor %}
   {% endfilter %}
 
@@ -111,5 +167,12 @@ postgresql_objects_queries: |-
   {{
     query('vars',
       *(query('varnames', '^postgresql_objects_queries__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+postgresql__simple_setup: |-
+  {{
+    query('vars',
+      *(query('varnames', '^postgresql__simple_setup__.*') | sort)
     ) | sum(start=[])
   }}
