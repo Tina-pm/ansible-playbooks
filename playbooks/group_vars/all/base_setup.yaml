@@ -12,29 +12,33 @@ base_setup__disable_resolved: true
 base_setup__apt_upgrade: false
 base_setup__pkg_install__base:
   - acl  # Needed for becoming a non-root user.
-  - bash-completion
-  - bind9-host
   - cron
   - cron-apt
+  - logrotate
+  - mailutils
+  - rsyslog
+
+base_setup__pkg_install__utils:
+  - bash-completion
   - info
   - kitty-terminfo
   - less
-  - logrotate
   - lsof
-  - mailutils
   - man
   - manpages
   - moreutils
   - ncurses-term
+  - screen
+  - tmux
+  - vim
+
+base_setup__pkg_install__netutils:
+  - bind9-host
   - netcat-openbsd
   - rsync
-  - rsyslog
-  - screen
   - socat
   - strace
   - tcpdump
-  - tmux
-  - vim
 
 base_setup__pkg_install__locate:
   - |-
