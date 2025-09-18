@@ -24,7 +24,6 @@ base_setup__pkg_install__base:
   - mailutils
   - man
   - manpages
-  - mlocate
   - moreutils
   - ncurses-term
   - netcat-openbsd
@@ -36,6 +35,16 @@ base_setup__pkg_install__base:
   - tcpdump
   - tmux
   - vim
+
+base_setup__pkg_install__locate:
+  - |-
+    {{
+      'mlocate' if (
+        apt__distro_ver is version('11', 'lt')
+        if (apt__vendor | d('debian')) == 'debian' else
+        apt__distro_ver is version('22.04', 'lt')
+      ) else 'plocate'
+    }}
 
 base_setup__setup_locales: true
 base_setup__default_locale: en_IE.UTF-8
