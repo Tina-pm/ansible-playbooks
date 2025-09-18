@@ -41,11 +41,33 @@ vm_volumes: |-
 vm_interfaces: |-
   {{ query('vars', *(query('varnames', '^vm_interface__.*') | sort)) | select }}
 
-vm_image_variant: genericcloud
 # Uses variables computed by 25-apt-calculated.yaml.
-vm_image_url:
-  http://cloud.debian.org/images/cloud/{{ apt__distro_name }}/latest/debian-{{
-    apt__distro_ver }}-{{ vm_image_variant }}-amd64.qcow2
+vm_image_variant: |-
+  {{
+    'genericcloud' if (apt__vendor | d('debian')) == 'debian' else
+    'server-cloudimg'
+  }}
+vm_image_arch: amd64
+# yamllint disable rule:quoted-strings
+_vm_image_url_debian:
+  "http://cloud.debian.org/images/cloud/{distro_name}/latest/\
+   debian-{distro_ver}-{variant}-{arch}.qcow2"
+_vm_image_url_ubuntu:
+  "https://cloud-images.ubuntu.com/{distro_name}/current/\
+   {distro_name}-{variant}-{arch}.img"
+# yamllint enable rule:quoted-strings
+vm_image_url: |-
+  {{
+    (
+      _vm_image_url_debian if (apt__vendor | d('debian')) == 'debian' else
+      _vm_image_url_ubuntu
+    ).format(
+      distro_name=apt__distro_name,
+      distro_ver=apt__distro_ver,
+      variant=vm_image_variant,
+      arch=vm_image_arch,
+    )
+  }}
 
 vm_volume__00_root:
   dev: /dev/vg0/vm-{{ inventory_hostname_short }}-root
