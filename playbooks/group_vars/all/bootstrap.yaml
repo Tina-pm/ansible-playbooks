@@ -12,6 +12,7 @@ bootstrap__install_packages__common:
 bootstrap__vmhost_install_packages__common:
   - guestfs-tools
   - python3-libvirt
+  - python3-lxml
   - virtinst
 
 # Agregation of custom configuration using var prefixes
