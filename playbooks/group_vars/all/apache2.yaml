@@ -171,7 +171,7 @@ apache2__sites__simple_proxy: |-
 apache2__logdirs__simple_proxy: |-
   {{
     _a2_logdirs_simple_proxy if apache2__simple_proxy is ansible.builtin.truthy
-    else {}
+    else []
   }}
 
 _a2_mods_simple_proxy:
