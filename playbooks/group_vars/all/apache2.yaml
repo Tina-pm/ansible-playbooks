@@ -8,6 +8,7 @@ apache2__enable: false
 apache2__install_ferm_svc: '{{ ferm__enable | bool }}'
 apache2__listen_http__base: [80]
 apache2__listen_https__base: []
+apache2__install_logrotate_conf: true
 apache2__logdirs__base:
   - /var/log/apache2
 
