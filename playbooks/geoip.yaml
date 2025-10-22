@@ -1,0 +1,14 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+# =============================================================================
+# Install and configure GeoIP database downloader
+# =============================================================================
+
+- name: Install and configure GeoIP database downloader
+  hosts: '{{ target_hosts | d("all") }}'
+  become: true
+  gather_facts: false
+  roles:
+    - role: tina_pm.playbooks.geoip
+      when: geoip__enable
+      tags: geoip
