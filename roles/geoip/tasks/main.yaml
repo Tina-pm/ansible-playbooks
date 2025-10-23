@@ -1,0 +1,21 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+
+- name: Install geoipupdate
+  ansible.builtin.package:
+    name: geoipupdate
+    state: present
+
+- name: Configure geoipupdate
+  ansible.builtin.template:
+    src: GeoIP.conf.j2
+    dest: /etc/GeoIP.conf
+    owner: root
+    group: root
+    mode: '0640'
+  register: _geoip_config
+
+- name: Download databases  # noqa: no-handler no-changed-when
+  ansible.builtin.command:
+    argv: [geoipupdate]
+  when: _geoip_config is changed

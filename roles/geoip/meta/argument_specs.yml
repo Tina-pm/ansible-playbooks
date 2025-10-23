@@ -1,0 +1,35 @@
+# vim:ts=2:sw=2:et:ai:sts=2
+---
+argument_specs:
+  main:
+    short_description: Install and configure geoipupdate
+    description:
+      - This role installs and configures the geoipupdate package.
+      - Once configured, the MaxMind GeoIP database is downloaded and updated
+        weekly.
+      - See https://dev.maxmind.com/geoip/geolite2-free-geolocation-data/ for
+        information on setting up an account and obtaining a license key.
+    author:
+      - Martina Ferrari
+    options:
+      geoip__account_id:
+        description: MaxMind account identifier
+        type: str
+        required: true
+
+      geoip__license_key:
+        description: MaxMind license key
+        type: str
+        required: true
+
+      geoip__edition_ids:
+        description: MaxMind account identifier
+        type: list
+        elements: str
+        choices:
+          - GeoLite2-Country
+          - GeoLite2-City
+          - GeoLite2-ASN
+        default:
+          - GeoLite2-Country
+          - GeoLite2-City

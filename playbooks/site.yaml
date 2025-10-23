@@ -40,6 +40,9 @@
 - name: Install and configure PostgreSQL object-relational SQL database
   import_playbook: ./postgresql.yaml
 
+- name: Install and configure GeoIP database downloader
+  import_playbook: ./geoip.yaml
+
 - name: Install and configure Apache web server
   import_playbook: ./apache2.yaml
 
