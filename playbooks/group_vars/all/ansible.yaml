@@ -10,7 +10,7 @@ ansible_host: '{{ host_fqdn }}'
 # Override interpreter location according to Debian default configurations.
 ansible_python_interpreter: |-
   {{
-    '/usr/bin/python'
-    if apt__distro in ('buster', 'stretch', 'oldstable') else
     '/usr/bin/python3'
+    if apt__python3_is_default else
+    '/usr/bin/python'
   }}

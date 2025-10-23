@@ -9,6 +9,16 @@ bootstrap__install_packages__common:
   - python3
   - python3-apt
 
+bootstrap__vmhost_install_packages__common:
+  - |-
+    {{
+      'guestfs-tools' if apt__distro_ver is version('12', 'ge') else
+      'libguestfs-tools'
+    }}
+  - python3-libvirt
+  - python3-lxml
+  - virtinst
+
 # Agregation of custom configuration using var prefixes
 # -----------------------------------------------------------------------------
 
@@ -16,5 +26,12 @@ bootstrap__install_packages: |-
   {{
     query('vars',
       *(query('varnames', '^bootstrap__install_packages__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+bootstrap__vmhost_install_packages: |-
+  {{
+    query('vars',
+      *(query('varnames', '^bootstrap__vmhost_install_packages__.*') | sort)
     ) | sum(start=[])
   }}
