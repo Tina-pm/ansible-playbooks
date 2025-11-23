@@ -18,6 +18,7 @@ fail2ban__use_jail_apache2: '{{ apache2__enable | bool }}'
 # -----------------------------------------------------------------------------
 fail2ban__jail_config__00_default:
   DEFAULT:
+    banaction: iptables-multiport
     bantime: 10m
     bantime.increment: true
     maxretry: 5
