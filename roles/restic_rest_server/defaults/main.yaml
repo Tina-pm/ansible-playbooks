@@ -1,0 +1,10 @@
+restic_rest_server__enable: false
+restic_rest_server__port: 8000
+restic_rest_server__install_ferm_svc: false
+restic_rest_server__ferm_allow_from: ~
+restic_rest_server__listen: ':8000'
+restic_rest_server__backup_dir: /var/backups/restic-rest-server
+restic_rest_server__username: ~
+restic_rest_server__password: ~
+restic_rest_server__htpasswd: /etc/restic-rest-server/users.htpasswd
+restic_rest_server__args: --htpasswd-file {{ restic_rest_server__htpasswd }}

@@ -1,0 +1,16 @@
+# TCP or UNIX listen address.
+#LISTEN = unix:/run/restic-rest-server
+#LISTEN = :8000
+LISTEN = "{{ restic_rest_server__listen }}"
+
+# Directory to store backups.
+# Note: the server will not start unless this variable is defined.
+#BACKUP_DIR = /srv/backups/
+BACKUP_DIR = "{{ restic_rest_server__backup_dir }}"
+
+# Extra arguments to pass to the server. Run `restic-rest-server --help` to see
+# available options. By default, basic authentication is enabled.
+#ARGS = "\
+#  --htpasswd-file /etc/restic-rest-server/users.htpasswd \
+#"
+ARGS = "{{ restic_rest_server__args }}"

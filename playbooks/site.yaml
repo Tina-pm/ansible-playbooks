@@ -49,6 +49,9 @@
 - name: Install and configure aptly Debian repository manager
   import_playbook: ./aptly.yaml
 
+- name: Set up backups with Restic REST Server
+  import_playbook: ./restic_rest_server.yaml
+
 - name: Set up backups with Restic
   import_playbook: ./restic_backup.yaml
 

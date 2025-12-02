@@ -1,0 +1,30 @@
+- name: Install needed packages
+  ansible.builtin.package:
+    name:
+      - restic-rest-server
+    state: present
+
+- name: Configure Restic REST Server
+  ansible.builtin.template:
+    src: default.j2
+    dest: /etc/default/restic-rest-server
+    owner: root
+    group: root
+    mode: '0644'
+  notify: _tina_pm_restart_restic_rest_server
+
+- name: Install ferm configuration
+  ansible.builtin.include_role:
+    name: tina_pm.common.ferm_svc
+  vars:
+    ferm_svc__name: restic-rest-server
+    ferm_svc__allow_protos: tcp
+    ferm_svc__allow_from: '{{ restic_rest_server__ferm_allow_from }}'
+    ferm_svc__allow_ports: '{{ restic_rest_server__port }}'
+  when: restic_rest_server__install_ferm_svc | bool
+
+- name: Start and enable restic-rest-server service
+  ansible.builtin.service:
+    name: restic-rest-server
+    state: started
+    enabled: true

@@ -1,0 +1,8 @@
+- name: Set up Restic REST Server
+  hosts: '{{ target_hosts | d("all") }}'
+  become: true
+  gather_facts: false
+  roles:
+    - role: tina_pm.playbooks.restic_rest_server
+      when: restic_rest_server__enable
+      tags: [backup, restic-rest-server]
