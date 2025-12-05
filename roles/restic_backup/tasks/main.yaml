@@ -6,6 +6,7 @@
     name:
       - moreutils
       - restic
+      - gdisk
     state: present
 
 - name: Set up backup script
