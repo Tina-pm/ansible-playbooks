@@ -1,0 +1,4 @@
+- name: _tina_pm_restart_restic_rest_server
+  ansible.builtin.systemd:
+    name: restic-rest-server
+    state: restarted
