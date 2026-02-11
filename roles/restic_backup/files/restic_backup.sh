@@ -67,7 +67,7 @@ teardown() {
   # Remove MBR and partition tables backup
   lsblk -l -o TYPE,NAME | grep "^disk " | while read -r _ harddrive; do
     rm -f "$BACKUP_FROM_DIR/$harddrive.mbr"
-    rm -f "$BACKUP_FROM_DIR/$harddrive.sfdisk"
+    rm -f "$BACKUP_FROM_DIR/$harddrive.sgdisk"
   done
   # Umount boot and EFI
   for mount_point in boot boot_efi; do
@@ -99,7 +99,7 @@ teardown() {
       done
       losetup --detach "$loop_device_main"
       rm -f "$(get_backup_location "/dev/$volume").mbr"
-      rm -f "$(get_backup_location "/dev/$volume").sfdisk"
+      rm -f "$(get_backup_location "/dev/$volume").sgdisk"
     elif test -f "$(get_backup_location "/dev/$volume")"; then
       rm "$(get_backup_location "/dev/$volume")"
     else
@@ -133,7 +133,7 @@ teardown
 mkdir -p "$BACKUP_FROM_DIR"
 lsblk -l -o TYPE,NAME | grep "^disk " | while read -r _ harddrive; do
   dd if="/dev/$harddrive" of="$BACKUP_FROM_DIR/$harddrive.mbr" bs=512 count=1
-  sfdisk -d "/dev/$harddrive" > "$BACKUP_FROM_DIR/$harddrive.sfdisk"
+  sgdisk --backup="$BACKUP_FROM_DIR/$harddrive.sgdisk" "/dev/$harddrive"
 done
 # Backup boot and EFI
 mount -m "$(findmnt -n -o SOURCE /boot)" "$BACKUP_FROM_DIR/boot"
@@ -152,8 +152,8 @@ get_volumes | while read -r volume; do
   if is_partition_table "/dev/$volume-snap"; then
     dd if="/dev/$volume-snap" of="$(get_backup_location "/dev/$volume").mbr" \
       bs=512 count=1
-    sfdisk -d "/dev/$volume-snap" \
-      > "$(get_backup_location "/dev/$volume").sfdisk"
+    sgdisk --backup="$(get_backup_location "/dev/$volume").sgdisk" \
+      "/dev/$volume-snap"
     backup_location="$(get_backup_location "/dev/$volume")"
     loop_device_main="$(losetup --show --find --partscan "/dev/$volume-snap")"
     kpartx -l "$loop_device_main" | while read -r loop_device_part _; do
