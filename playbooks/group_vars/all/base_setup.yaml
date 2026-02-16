@@ -15,6 +15,7 @@ base_setup__pkg_install__base:
   - cron
   - cron-apt
   - dbus
+  - linux-sysctl-defaults  # Need for non-root ping.
   - logrotate
   - mailutils
   - rsyslog
