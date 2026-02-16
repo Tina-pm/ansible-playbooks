@@ -38,4 +38,4 @@
     dest: /etc/cron.daily/restic_backup
     owner: root
     group: root
-    mode: '0775'
+    mode: '0700'  # The repository URL may contain a password.
