@@ -63,6 +63,15 @@ is_filesystem() {
   test -n "$filesystem" && grep -q "\b${filesystem}$" /proc/filesystems
 }
 
+is_swap() {
+  # Exit with 0 if the parameter is a device containing a swap space, 1
+  # otherwise.
+  local device="$1"
+  local filesystem
+  filesystem="$(blkid -s TYPE -o value "$device")"
+  test -n "$filesystem" && test "$filesystem" = swap
+}
+
 teardown() {
   # Remove MBR and partition tables backup
   lsblk -l -o TYPE,NAME | grep "^disk " | while read -r _ harddrive; do
@@ -160,13 +169,13 @@ get_volumes | while read -r volume; do
       part="p${loop_device_part##*p}"
       if is_filesystem "/dev/$loop_device_part"; then
         mount -m -o ro "/dev/$loop_device_part" "$backup_location$part"
-      else
+      elif ! is_swap "/dev/$loop_device_part"; then
         dd if="/dev/$loop_device_part" of="$backup_location$part"
       fi
     done
   elif is_filesystem "/dev/$volume-snap"; then
     mount -m -o ro "/dev/$volume-snap" "$(get_backup_location "/dev/$volume")"
-  else
+  elif ! is_swap "/dev/$volume-snap"; then
     dd if="/dev/$volume-snap" of="$(get_backup_location "/dev/$volume")"
   fi
 done
