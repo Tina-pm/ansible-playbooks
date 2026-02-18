@@ -173,6 +173,21 @@
       loop: '{{ _target_hosts }}'
       changed_when: true
 
+    - name: Disable cloud-init before first boot
+      ansible.builtin.command:
+        cmd: |
+          virt-customize -d {{ item }} --touch /etc/cloud/cloud-init.disabled
+      loop: '{{ _target_hosts }}'
+      changed_when: true
+
+    - name: Disable systemd-networkd before first boot
+      ansible.builtin.command:
+        cmd: >
+          virt-customize -d {{ item }} --run-command
+            systemctl mask systemd-networkd.service
+      loop: '{{ _target_hosts }}'
+      changed_when: true
+
     - name: Start VM domains
       community.libvirt.virt:
         state: running
