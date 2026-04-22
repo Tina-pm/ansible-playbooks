@@ -13,48 +13,46 @@ apt__use_grafana_repo: |-
     ) is any
   }}
 apt__custom_sources__grafana: |-
-  {{ _apt_grafana_repo if apt__use_grafana_repo else {} }}
+  {{ dict(grafana=_apt_grafana_repo if apt__use_grafana_repo else None) }}
 apt__trusted_keys__grafana: |-
-  {{ _apt_grafana_key if apt__use_grafana_repo else {} }}
+  {{ dict(grafana=_apt_grafana_key if apt__use_grafana_repo else None) }}
 
 _apt_grafana_repo:
-  grafana:
-    mirror: https://packages.grafana.com/oss/deb
-    distro: stable
-    components: main
+  mirror: https://packages.grafana.com/oss/deb
+  distro: stable
+  components: main
 
 # To refresh, run:
 # $ wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | base64
-_apt_grafana_key:
-  grafana: |
-    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
+_apt_grafana_key: |
+  mQGNBGTnhmkBDADUE+SzjRRyitIm1siGxiHlIlnn6KO4C4GfEuV+PNzqxvwYO+1rmcKlGDU0ugo8
+  ohXruAOC77Kwc4keVGNU89BeHvrYbIftz/yxEneuPsCbGnbDMIyCk44UOetRtV9/59Gj5YjNqnsZ
+  Cr+e5D/JfrHUJTTwKLv88A9eHKxskrlZr7Un7j3iEf3NChlOh2Zk9Wfk8IhAqMMTferU4iTIhQk+
+  5fanShtXIuzBaxU3lkzFSG7VuAH4CBLPWitKRMn5oqXUE0FZbRYL/6Qz0Gt6YCJsZbaQ3Am7FCwW
+  Cp9+ZHbR9yU+bkK0Dts4PNx4Wr9CktHIvbypT4Lk2oJEPWjcCJQHqpPQZXbnclXRlK5Ea0NVpaQd
+  GK+vJS4HGxFFjSkvTKAZYgwOk93qlpFeDML3TuSgWxuw4NIDitvewudnaWzfl9tDIoVSBb16nwJ8
+  bMDzovC/RBE14rRKYtMLmBsRzGYHWd0NnX+FitAS9uURHuFxghv9GFPheTaXvc4glM94HBUAEQEA
+  AbQmR3JhZmFuYSBMYWJzIDxlbmdpbmVlcmluZ0BncmFmYW5hLmNvbT6JAdQEEwEKAD4CGwMFCwkI
+  BwIGFQoJCAsCBBYCAwECHgECF4AWIQS1Oud7rbYwpoMEYAWWP6J3EEWFRQUCaKhvPQUJB4NP1AAK
+  CRCWP6J3EEWFRUjOC/9YdWOWJLJVKzLx8uv5YVzebyw15HevhKahbznJX5fHnE8irjkiPFltVEZ4
+  T37s5afRGBEJnR1UFd80s7jzwbuoZh/zEB3jN8q50g64AznuzDa0PWKzaY7Tgkssx3+hs6TSvIwV
+  4z8T7f56lDudeHxHXx+htRnZ3ebKNPCJS7+G12GF6W3C3znpdjgvhVUB0uxd+42V0fRqk2GLNZeK
+  S9988fi5dYRAy9Ozwced7ByCFjde9FBgUtrH3mG1/ibzLEh04k02nYjc8mrH32t4UCWpxQEJ1vZA
+  2vT2HN3/cH/4uyFdyU6OHkMyMbz6lmeXe71dF5hOB4+/RP6Ndyj7ViRNDbm70NRBaFne/+YOJvmM
+  fJTCh7YbF5qEn1ihGkJJ0ohEu2IB+EGEhyiDm8SIsj1uMw7n17iIPNtbsU5GgnmLtfguP/WbwKV2
+  UeuxTpiOeYb6blDwRlh48uHMlA5HBW+487Jktw3iPj1IKhdtAC9CU3xAvzDcseMbgmM6Xj2bSQG5
+  AY0EZOeGaQEMALNIFUricEIwtZiX7vSDjwxobbqPKqzdek8x3ud0CyYlrbGHy0k+FDEXstjJQQ1s
+  9rjJSu3sv5wyg9GDAUH3nzO976n/ZZvKPti3p2XU2UFx5gYkaaFVD56yYxqGY0YU5ft6BG+RUz3i
+  EPg3UBUzt0sCIYnG9+CsDqGOnRYIIa46fu2/H9Vu8JvvSq9xbsK9CfoQDkIcoQOixPuI4P7eHtsw
+  CeYR/1LUTWEnYQWsBCf57cEpzR6t7mlQnzQo9z4i/kp4S0ybDB77wnn+isMADOS+/VpXO+M7Zj5t
+  pfJ6PkKch3SGXdUy3zht8luFOYpJr2lVzp7n3NwB4zW08RptTzTgFAaW/NH2JjYI+rDvQm4jNs08
+  Dtspnm4OQvBA9Df/6qwMEOZ9i10ixqk+55UpQFJ3nf4uKlSUM7bKXXVcD/odq804Y/K4y3csE059
+  YVIyaPexEvYSYlHE2odJWRg2Q1VehmrOSC8Qps3xpU7dTHXD74ZpaYbrhaViRS5v/lCsiwARAQAB
+  iQG8BBgBCgAmAhsMFiEEtTrne622MKaDBGAFlj+idxBFhUUFAmiobzkFCQeDT9AACgkQlj+idxBF
+  hUVsmQwA0PA/zd7NqtnZ/Z8857gp2Wq2/e4EX8nRjsW2ZlrZfbU5oMQv9OZZ4z1UjIKEUV+TnCwX
+  EKXTMJomdekQSSayVVx/u5w+0YM8gRuQGrG8hW0GRR8sHIeuwBFlyQrlwxUwXvDOPDYyieETjaQq
+  MucupIKoIPm3CjFySvfizvSWUVSWBnGmQfpv6OiGYawvwfewcQHUdLMgWN3lYlzGQJL4+OMm7XcB
+  8VNTa586Q00fmjDfktHYvGpmhqr3gsd4gS3AjTk0zI65qXBRJkdqVnwUrMUD8TcxXYNXf90mhR0N
+  WkLmp6kBYiW8+QY6ndMmRVpodg1A87qgMYaZUAAlxCS4XKTUr+/YMDYOWgLN6i4UeYG/3/hsnAEH
+  m5ITojfh6cLfdlhjohFTnD0IYw3AsNJXRzKB1g5FTBKLLLIdXgS/3rWV1qjAd3drQVIMCku6HKl/
+  vT4ftrBHeSyV7eLwOYbe3/bw8VMx+lmMheD8/qJMia1om0iBBRSXRjY//f+Lllqm
