@@ -25,7 +25,7 @@
     group: root
     mode: '0600'
   no_log: true
-  when: restic_backup__password
+  when: restic_backup__password is ansible.builtin.truthy
 
 - name: Set up cron job
   ansible.builtin.copy:
@@ -38,4 +38,4 @@
     dest: /etc/cron.daily/restic_backup
     owner: root
     group: root
-    mode: '0775'
+    mode: '0700'  # The repository URL may contain a password.

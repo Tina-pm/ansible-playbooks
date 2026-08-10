@@ -6,3 +6,27 @@
 
 mtail__enable: false
 mtail__install_ferm_svc: '{{ ferm__enable | bool }}'
+mtail__ferm_allow_from: '{{ trusted_networks }}'
+
+# Defaults for Apache2 logs.
+mtail__logs__apache2: |-
+  {{ [apache2__metrics_log] if apache2__add_metrics_log else [] }}
+mtail__programs__apache2: |-
+  {{ ['files/mtail/apache_metrics.mtail'] if apache2__add_metrics_log else [] }}
+
+# Agregation of custom configuration using var prefixes
+# -----------------------------------------------------------------------------
+
+mtail__logs: |-
+  {{
+    query('vars',
+      *(query('varnames', '^mtail__logs__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+mtail__programs: |-
+  {{
+    query('vars',
+      *(query('varnames', '^mtail__programs__.*') | sort)
+    ) | sum(start=[])
+  }}

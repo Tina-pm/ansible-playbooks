@@ -33,6 +33,9 @@ apache2__default_site_force_ssl: '{{ apache2__default_ssl_enable }}'
 # Rewrite request IPs when received from a reverse proxy using one of these
 # addresses.
 apache2__remoteip_from_proxies: []
+# Add a custom global logger for metric collection using mtail.
+apache2__add_metrics_log: '{{ mtail__enable }}'
+apache2__metrics_log: /var/log/apache2/metrics.log
 
 # Simple reverse proxy configuration.
 # -----------------------------------------------------------------------------
@@ -159,6 +162,17 @@ apache2__conf__remoteip:
         LogFormat {{ common_fmt | to_json }} common
       </IfModule>
 
+apache2__conf__metrics:
+  metrics:
+    state: |-
+      {{ 'enabled' if apache2__add_metrics_log else 'present' }}
+    src: |
+      LogFormat "%v:%p %R %m %>s %H conn=%X %D %O %I %k" metrics
+      GlobalLog {{ apache2__metrics_log }} metrics
+  # Remove old versions.
+  mtail:
+    state: absent
+
 apache2__mods__simple_proxy: |-
   {{
     _a2_mods_simple_proxy if apache2__simple_proxy is ansible.builtin.truthy
@@ -209,7 +223,6 @@ _a2_sites_simple_proxy: |-
 
     CustomLog ${APACHE_LOG_DIR}/{{ name }}/access.log combined
     ErrorLog ${APACHE_LOG_DIR}/{{ name }}/error.log
-    CustomLog ${APACHE_LOG_DIR}/metrics.log metrics
 
     ProxyPreserveHost On
     ProxyVia On

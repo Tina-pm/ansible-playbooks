@@ -24,6 +24,7 @@ users__create_groups__libvirt:
 
 apt__packages_to_install__libvirt:
   - prometheus-libvirt-exporter
+  - qemu-system-modules-spice
   # required by community.libvirt.virt
   - python3-libvirt
 apt__services_to_enable__libvirt:
