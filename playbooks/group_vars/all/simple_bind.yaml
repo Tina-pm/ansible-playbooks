@@ -188,7 +188,6 @@ _sbind_views_default:
       {{ ['any'] if simple_bind__open_resolver else ['internal'] }}
     includes: |-
       {{
-        ['named.conf.default-zones'] +
         (['zones.rfc1918'] if simple_bind__add_rfc1918_zones else [])
       }}
 
@@ -204,7 +203,6 @@ _sbind_views_split:
     recursion: true
     allow_recursion: [internals]
     includes:
-      - named.conf.default-zones
 
 _sbind_managed_zones_soa_default:
   serial: 1
