@@ -15,8 +15,10 @@ bootstrap__vmhost_install_packages__common:
       'guestfs-tools' if apt__distro_ver is version('12', 'ge') else
       'libguestfs-tools'
     }}
+  - lvm2
   - python3-libvirt
   - python3-lxml
+  - qemu-utils
   - virtinst
 
 # Agregation of custom configuration using var prefixes

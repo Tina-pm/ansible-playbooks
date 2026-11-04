@@ -7,9 +7,11 @@
 # Control variables (set with `--extra-vars=...`):
 #  * `target_hosts`: Comma-separated list of virtual host(s) to install
 #    (mandatory).
-#  * `force_reinstall`: Destroy and re-create existing host definitions.
+#  * `force_reinstall`: Destroy and re-create existing host definitions and
+#    root volumes.
 #
-# Note: Volume creation, formatting, and mounting is not yet implemented.
+# Note: No-root volume creation, formatting, and mounting is not yet
+# implemented.
 # =============================================================================
 
 - name: Validate play parameters
@@ -118,6 +120,79 @@
       loop: '{{ _existing_guests }}'
       when:
         _existing_guests and _force
+
+    - name: Remove root LVs when force-reinstalling
+      community.general.lvol:
+        vg: '{{ _vg }}'
+        lv: '{{ _lv }}'
+        state: absent
+        force: true
+      loop: '{{ _target_hosts }}'
+      vars:
+        _vg: '{{ hostvars[item].vm_root_vg }}'
+        _lv: '{{ hostvars[item].vm_root_lv }}'
+      when: _force | bool
+
+    - name: Check root LVs do not already exist
+      ansible.builtin.command:
+        argv:
+          - lvs
+          - --noheadings
+          - -o
+          - lv_name
+          - '{{ _vg }}'
+      loop: '{{ _target_hosts }}'
+      vars:
+        _vg: '{{ hostvars[item].vm_root_vg }}'
+        _lv: '{{ hostvars[item].vm_root_lv }}'
+      register: _root_lvs
+      check_mode: false
+      changed_when: false
+      failed_when: >-
+        _root_lvs.rc != 0 or
+        (not (_force | bool) and
+         _lv in (_root_lvs.stdout_lines | map('trim') | list))
+
+    - name: Download root images
+      ansible.builtin.get_url:
+        url: '{{ hostvars[item].vm_image_url }}'
+        dest: >-
+          {{ libvirt_vm_image_cache_path }}/{{
+            hostvars[item].vm_image_url | basename
+          }}
+        checksum: '{{ hostvars[item].vm_image_checksum | default(omit) }}'
+        mode: '0644'
+      loop: '{{ _target_hosts }}'
+
+    - name: Create root LVs
+      community.general.lvol:
+        vg: '{{ _vg }}'
+        lv: '{{ _lv }}'
+        size: '{{ _size }}'
+        state: present
+      loop: '{{ _target_hosts }}'
+      vars:
+        _vg: '{{ hostvars[item].vm_root_vg }}'
+        _lv: '{{ hostvars[item].vm_root_lv }}'
+        _size: '{{ hostvars[item].vm_volume__00_root.size }}'
+
+    - name: Populate root LVs from cloud images
+      ansible.builtin.command:
+        argv:
+          - qemu-img
+          - convert
+          - -n
+          - -O
+          - raw
+          - -S
+          - '0'
+          - >-
+            {{ libvirt_vm_image_cache_path }}/{{
+              hostvars[item].vm_image_url | basename
+            }}
+          - '{{ hostvars[item].vm_volume__00_root.dev }}'
+      loop: '{{ _target_hosts }}'
+      changed_when: true
 
     - name: Define guest domains and volumes
       ansible.builtin.include_role:

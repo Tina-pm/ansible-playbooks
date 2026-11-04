@@ -93,6 +93,8 @@ libvirt_host_qemu_emulators:
   - x86
 
 libvirt_vm_image_cache_path: /var/lib/libvirt/images
+# Volume group used for VM root disks.
+libvirt_vm_root_vg: vg0
 libvirt_host_pools__common:
   - name: images
     path: /var/lib/libvirt/images
