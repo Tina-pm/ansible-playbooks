@@ -1,7 +1,13 @@
 # vim:ts=2:sw=2:et:ai:sts=2
 
-default_install_hook_types: [pre-push]
+default_install_hook_types:
+  - pre-push
+
+default_language_version:
+  node: 20.19.2
+
 repos:
+  # Generic.
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -11,7 +17,11 @@ repos:
       - id: check-json
       - id: check-shebang-scripts-are-executable
       - id: check-merge-conflict
-      # - id: check-symlinks
+      - id: check-symlinks
+        exclude: |
+          (?x)^(
+            playbooks/group_vars/all/apt/calculated_vars.yaml
+          )$
       - id: check-toml
       - id: check-xml
       - id: check-yaml
@@ -25,6 +35,7 @@ repos:
       - id: requirements-txt-fixer
       - id: trailing-whitespace
 
+  # Ansible.
   - repo: https://github.com/ansible/ansible-lint
     rev: v25.2.1
     hooks:
@@ -32,6 +43,7 @@ repos:
         additional_dependencies:
           - ansible
 
+  # Shell scripts.
   - repo: local
     hooks:
       # Needs `apt install shfmt` or `brew install shfmt`.
@@ -40,7 +52,7 @@ repos:
         description: Shell source code formatter
         language: system
         entry: shfmt
-        args: [-w, -s]
+        args: [-w]
         types: [shell]
         exclude_types: [csh, tcsh, zsh]
 
@@ -50,9 +62,10 @@ repos:
         description: Static analysis tool for shell scripts
         language: system
         entry: shellcheck
-        args: [-f, gcc]
+        args: [-f, gcc, -x]
         types: [shell]
 
+  # Markdown
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.43.0
     hooks:
