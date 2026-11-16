@@ -21,6 +21,13 @@ ansible_libvirt_uri: |-
 ansible_host: |-
   {{ vm_name if libvirt__vm_use_qemu_connection | bool else host_fqdn }}
 
+# Guest operating system. Supported values are in vm_os_supported.
+# Defaults to the APT vendor so existing guests keep working.
+vm_os: '{{ apt__vendor }}'
+vm_os_supported:
+  - debian
+  - ubuntu
+
 bootstrap__install_packages__libvirt:
   - ifupdown
   - openssh-server
@@ -35,19 +42,19 @@ vm_default_params:
 vm_params: {}
 
 # Discover custom configurations using var prefixes
-# (e.g. vm_volume__root).
+# (e.g. vm_volume__root). The volume with `root: true` receives the image.
 vm_volumes: |-
   {{ query('vars', *(query('varnames', '^vm_volume__.*') | sort)) | select }}
 vm_interfaces: |-
   {{ query('vars', *(query('varnames', '^vm_interface__.*') | sort)) | select }}
 
-# Uses variables computed by 25-apt-calculated.yaml.
 vm_image_variant: |-
   {{
-    'genericcloud' if (apt__vendor | d('debian')) == 'debian' else
+    'genericcloud' if vm_os == 'debian' else
     'server-cloudimg'
   }}
 vm_image_arch: amd64
+
 # yamllint disable rule:quoted-strings
 _vm_image_url_debian:
   "http://cloud.debian.org/images/cloud/{distro_name}/latest/\
@@ -59,7 +66,7 @@ _vm_image_url_ubuntu:
 vm_image_url: |-
   {{
     (
-      _vm_image_url_debian if (apt__vendor | d('debian')) == 'debian' else
+      _vm_image_url_debian if vm_os == 'debian' else
       _vm_image_url_ubuntu
     ).format(
       distro_name=apt__distro_name,
@@ -69,8 +76,15 @@ vm_image_url: |-
     )
   }}
 
+# Name of the root disk volume. Set `root: true` on the volume that
+# should receive the guest image.
+vm_root_lv: vm-{{ inventory_hostname_short }}-root
+
 vm_volume__00_root:
-  dev: /dev/vg0/vm-{{ inventory_hostname_short }}-root
+  root: true  # Volume that receives the guest image.
+  lv: '{{ vm_root_lv }}'
+  vg: vg0
+  thinpool: ~  # Name of an existing thin pool in vg, if any.
   target: vda
   type: block
   size: 10G
