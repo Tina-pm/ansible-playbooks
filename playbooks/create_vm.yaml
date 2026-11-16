@@ -283,6 +283,30 @@
       loop: '{{ _target_hosts }}'
       changed_when: true
 
+    - name: Enable Qemu Guest Agent
+      ansible.builtin.command:
+        argv:
+          - virt-customize
+          - -d
+          - '{{ item }}'
+          - --run-command
+          - systemctl enable qemu-guest-agent
+      loop: '{{ _target_hosts }}'
+      when: hostvars[item].vm_os == 'rocky'
+      changed_when: true
+
+    - name: Disable SELinux
+      ansible.builtin.command:
+        argv:
+          - virt-customize
+          - -d
+          - '{{ item }}'
+          - --edit
+          - '/etc/selinux/config: s/^SELINUX=.*/SELINUX=disabled/'
+      loop: '{{ _target_hosts }}'
+      when: hostvars[item].vm_os == 'rocky'
+      changed_when: true
+
     - name: Disable cloud-init before first boot
       ansible.builtin.command:
         cmd: |
@@ -296,6 +320,29 @@
           virt-customize -d {{ item }} --run-command
             'systemctl mask systemd-networkd.service'
       loop: '{{ _target_hosts }}'
+      changed_when: true
+
+    - name: Allow Ansible guest agent RPCs before first boot
+      # Rocky's qemu-guest-agent ships an RPC allowlist (FILTER_RPC_ARGS)
+      # that excludes the guest-exec/guest-file-* commands required by
+      # Ansible's libvirt_qemu connection plugin.
+      ansible.builtin.command:
+        argv:
+          - virt-customize
+          - -d
+          - '{{ item }}'
+          - --run-command
+          - >-
+            sed -i
+            -e s/--allow-rpcs=guest-/--allow-rpcs=guest-exec,guest-/
+            -e s/--allow-rpcs=guest-/--allow-rpcs=guest-exec-status,guest-/
+            -e s/--allow-rpcs=guest-/--allow-rpcs=guest-file-open,guest-/
+            -e s/--allow-rpcs=guest-/--allow-rpcs=guest-file-write,guest-/
+            -e s/--allow-rpcs=guest-/--allow-rpcs=guest-file-read,guest-/
+            -e s/--allow-rpcs=guest-/--allow-rpcs=guest-file-close,guest-/
+            /etc/sysconfig/qemu-ga
+      loop: '{{ _target_hosts }}'
+      when: hostvars[item].vm_os == 'rocky'
       changed_when: true
 
     - name: Start VM domains

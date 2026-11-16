@@ -7,7 +7,11 @@
 # Essential packages before ansible can run.
 bootstrap__install_packages__common:
   - python3
-  - python3-apt
+
+bootstrap__install_packages__common_os: |-
+  {{
+    ['python3-apt'] if (vm_os | d('debian')) in ['debian', 'ubuntu'] else []
+  }}
 
 bootstrap__vmhost_install_packages__common:
   - |-
