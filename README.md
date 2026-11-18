@@ -8,10 +8,13 @@ that make life much easier if followed.
 
 ## Non-exhaustive list of assumptions
 
-* Hosts run on Debian.
+* Hosts run on Debian or on a RedHat-family distribution (notably Rocky
+  Linux).
 * Tools such as `cloud-init`, `systemd-networkd`, `systemd-resolved`, are
   not used.
-* Network configuration uses `ifupdown`.
+* Network configuration uses `ifupdown` on Debian and NetworkManager keyfiles
+  on RedHat-family distributions. The `net` role selects the backend from the
+  OS family; see `net__backend` to override it.
 * Per-host firewalls use `ferm` and `iptables`.
 * All hosts belong to the `site` group, where non-reusable settings are
   defined.
@@ -52,7 +55,7 @@ playbook_dir = .collections/ansible_collections/tina_pm/playbooks/playbooks/
   configuration variables, using commong prefixes (e.g.
   Unless overriden, `apt__packages_to_install` is constructed by concatenanting
   all variables named `apt__packages_to_install__*`).
-* A simple system to define full ifupdown-based network configuration is
-  provided.
+* A simple system to define full network configuration for both ifupdown
+  (Debian) and NetworkManager (RedHat-family) hosts.
 * Whenever possible, variables are prefixed by their associated role name,
   followed by 2 underscores.
