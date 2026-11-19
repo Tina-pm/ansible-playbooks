@@ -14,7 +14,8 @@ libvirt_hosts__forwarding_int_ifaces: []
 # Needed for network set-up during host's bootstrap.
 bootstrap__install_packages__libvirt:
   - bridge-utils
-base_setup__pkg_install__libvirt: '{{ bootstrap__install_packages__libvirt }}'
+base_setup__pkg_install__debian__libvirt: >-
+  {{ bootstrap__install_packages__libvirt }}
 
 users__admin_groups__libvirt:
   - libvirt
