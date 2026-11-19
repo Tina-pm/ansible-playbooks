@@ -10,39 +10,48 @@ base_setup__disable_cloud_init: true
 base_setup__disable_resolved: true
 
 base_setup__apt_upgrade: false
-base_setup__pkg_install__base:
+
+# Packages with the same name on Debian and RedHat OS families.
+base_setup__pkg_install__common__base:
   - acl  # Needed for becoming a non-root user.
-  - cron
-  - cron-apt
   - dbus
-  - linux-sysctl-defaults  # Need for non-root ping.
   - logrotate
-  - mailutils
   - rsyslog
 
-base_setup__pkg_install__utils:
+base_setup__pkg_install__common__utils:
   - bash-completion
   - info
-  - kitty-terminfo
   - less
   - lsof
-  - man
-  - manpages
-  - moreutils
   - ncurses-term
-  - screen
   - tmux
-  - vim
 
-base_setup__pkg_install__netutils:
-  - bind9-host
-  - netcat-openbsd
+base_setup__pkg_install__common__netutils:
   - rsync
   - socat
   - strace
   - tcpdump
 
-base_setup__pkg_install__locate:
+# Debian-only names, including packages without a RedHat equivalent.
+base_setup__pkg_install__debian__base:
+  - cron
+  - cron-apt
+  - linux-sysctl-defaults  # Need for non-root ping.
+  - mailutils
+
+base_setup__pkg_install__debian__utils:
+  - kitty-terminfo
+  - man
+  - manpages
+  - moreutils
+  - screen
+  - vim
+
+base_setup__pkg_install__debian__netutils:
+  - bind9-host
+  - netcat-openbsd
+
+base_setup__pkg_install__debian__locate:
   - |-
     {{
       'mlocate' if (
@@ -51,6 +60,22 @@ base_setup__pkg_install__locate:
         apt__distro_ver is version('22.04', 'lt')
       ) else 'plocate'
     }}
+
+# RedHat-only names for tools with a different package name on Debian.
+base_setup__pkg_install__redhat__base:
+  - cronie
+
+base_setup__pkg_install__redhat__utils:
+  - man-db
+  - man-pages
+  - vim-enhanced
+
+base_setup__pkg_install__redhat__netutils:
+  - bind-utils
+  - nmap-ncat
+
+base_setup__pkg_install__redhat__locate:
+  - mlocate
 
 base_setup__setup_locales: true
 base_setup__default_locale: en_IE.UTF-8
@@ -63,9 +88,29 @@ base_setup__locales_to_be_generated:
 # Agregation of custom configuration using var prefixes
 # -----------------------------------------------------------------------------
 
-base_setup__pkg_install: |-
+base_setup__pkg_install__common: |-
   {{
     query('vars',
-      *(query('varnames', '^base_setup__pkg_install__.*') | sort)
+      *(query('varnames', '^base_setup__pkg_install__common__.*') | sort)
     ) | sum(start=[])
   }}
+
+base_setup__pkg_install__debian: |-
+  {{
+    query('vars',
+      *(query('varnames', '^base_setup__pkg_install__debian__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+base_setup__pkg_install__redhat: |-
+  {{
+    query('vars',
+      *(query('varnames', '^base_setup__pkg_install__redhat__.*') | sort)
+    ) | sum(start=[])
+  }}
+
+base_setup__pkg_install_for_debian: >-
+  {{ base_setup__pkg_install__common + base_setup__pkg_install__debian }}
+
+base_setup__pkg_install_for_redhat: >-
+  {{ base_setup__pkg_install__common + base_setup__pkg_install__redhat }}

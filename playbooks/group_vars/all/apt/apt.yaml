@@ -8,7 +8,7 @@ apt__enable: true
 apt__distro: trixie
 
 # Add packages from base_setup.
-apt__packages_to_install__base_setup: '{{ base_setup__pkg_install }}'
+apt__packages_to_install__base_setup: '{{ base_setup__pkg_install_for_debian }}'
 
 # Add private APT repositories.
 apt__local_source_enable: false
