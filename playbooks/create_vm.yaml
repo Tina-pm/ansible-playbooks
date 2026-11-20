@@ -78,7 +78,7 @@
       ansible.builtin.set_fact:
         _defined_pool_vols: |-
           {% with %}
-          {% set _facts = ansible_libvirt_pools | dict2items |
+          {% set _facts = ansible_facts['libvirt_pools'] | dict2items |
             subelements('value.volumes')
           %}
           {{
