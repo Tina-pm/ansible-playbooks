@@ -7,9 +7,11 @@
 # Control variables (set with `--extra-vars=...`):
 #  * `target_hosts`: Comma-separated list of virtual host(s) to install
 #    (mandatory).
-#  * `force_reinstall`: Destroy and re-create existing host definitions.
+#  * `force_reinstall`: Destroy and re-create existing host definitions and
+#    root volumes.
 #
-# Note: Volume creation, formatting, and mounting is not yet implemented.
+# Note: No-root volume creation, formatting, and mounting is not yet
+# implemented.
 # =============================================================================
 
 - name: Validate play parameters
@@ -35,6 +37,24 @@
           The target hosts should be included in the libvirt_guests group:
           {{ _invalid_hosts }}.
       run_once: true
+
+    - name: Check guest OS is supported
+      ansible.builtin.assert:
+        that:
+          - vm_os | d('') in vm_os_supported
+        quiet: true
+        fail_msg: |-
+          Unsupported or missing vm_os for {{ inventory_hostname }}:
+          {{ vm_os | d('') }}.
+          Supported values: {{ vm_os_supported | join(', ') }}.
+
+    - name: Check root volume group is defined
+      ansible.builtin.assert:
+        that:
+          - vm_volume__00_root.vg is defined
+        quiet: true
+        fail_msg: |-
+          Missing vm_volume__00_root.vg for {{ inventory_hostname }}.
 
     - name: Create transient VM hosts group
       ansible.builtin.add_host:
@@ -118,6 +138,87 @@
       loop: '{{ _existing_guests }}'
       when:
         _existing_guests and _force
+
+    - name: Remove root LVs when force-reinstalling
+      community.general.lvol:
+        vg: '{{ _vg }}'
+        lv: '{{ _lv }}'
+        state: absent
+        force: true
+      loop: '{{ _target_hosts }}'
+      vars:
+        _vg: '{{ hostvars[item].vm_volume__00_root.vg }}'
+        _lv: '{{ hostvars[item].vm_volume__00_root.lv }}'
+      when: _force | bool
+
+    - name: Check root LVs do not already exist
+      ansible.builtin.command:
+        argv:
+          - lvs
+          - --noheadings
+          - -o
+          - lv_name
+          - '{{ _vg }}'
+      loop: '{{ _target_hosts }}'
+      vars:
+        _vg: '{{ hostvars[item].vm_volume__00_root.vg }}'
+        _lv: '{{ hostvars[item].vm_volume__00_root.lv }}'
+      register: _root_lvs
+      check_mode: false
+      changed_when: false
+      failed_when: >-
+        _root_lvs.rc != 0 or
+        (not (_force | bool) and
+         _lv in (_root_lvs.stdout_lines | map('trim') | list))
+
+    - name: Download root images
+      ansible.builtin.get_url:
+        url: '{{ hostvars[item].vm_image_url }}'
+        dest: >-
+          {{ libvirt_vm_image_cache_path }}/{{
+            hostvars[item].vm_image_url | basename
+          }}
+        checksum: '{{ hostvars[item].vm_image_checksum | default(omit) }}'
+        mode: '0644'
+      loop: '{{ _target_hosts }}'
+
+    - name: Create root LVs
+      community.general.lvol:
+        vg: '{{ _vg }}'
+        lv: '{{ _lv }}'
+        size: '{{ _size }}'
+        thinpool: '{{ _thinpool }}'
+        state: present
+      loop: '{{ _target_hosts }}'
+      vars:
+        _vg: '{{ hostvars[item].vm_volume__00_root.vg }}'
+        _lv: '{{ hostvars[item].vm_volume__00_root.lv }}'
+        _size: '{{ hostvars[item].vm_volume__00_root.size }}'
+        _thinpool: >-
+          {{ hostvars[item].vm_volume__00_root.thinpool
+             | default(omit, true) }}
+
+    - name: Populate root LVs from cloud images
+      ansible.builtin.command:
+        argv:
+          - qemu-img
+          - convert
+          - -n
+          - -O
+          - raw
+          - -S
+          - '0'
+          - >-
+            {{ libvirt_vm_image_cache_path }}/{{
+              hostvars[item].vm_image_url | basename
+            }}
+          - >-
+            /dev/{{ _vg }}/{{ _lv }}
+      loop: '{{ _target_hosts }}'
+      vars:
+        _vg: '{{ hostvars[item].vm_volume__00_root.vg }}'
+        _lv: '{{ hostvars[item].vm_volume__00_root.lv }}'
+      changed_when: true
 
     - name: Define guest domains and volumes
       ansible.builtin.include_role:

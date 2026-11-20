@@ -60,7 +60,11 @@
       </source>
         {% endif %} {# End volume.source.name check #}
       {% elif volume.type | default(libvirt_volume_default_type) == 'block' %}
+        {% if volume.lv is defined %}
+      <source dev='/dev/{{ volume.vg }}/{{ volume.lv }}'/>
+        {% else %}
       <source dev='{{ volume.dev }}'/>
+        {% endif %}
       {% else %} {# End elif volume.type is defined #}
       <source pool='{{ volume.pool }}' volume='{{ volume.name }}'/>
       {% endif %}
