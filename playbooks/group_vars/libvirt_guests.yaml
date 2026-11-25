@@ -27,11 +27,16 @@ vm_os: '{{ apt__vendor }}'
 vm_os_supported:
   - debian
   - ubuntu
+  - rocky
 
 bootstrap__install_packages__libvirt:
-  - ifupdown
   - openssh-server
   - qemu-guest-agent  # Needed for ansible/libvirt connection.
+
+bootstrap__install_packages__libvirt_os: |-
+  {{
+    ['ifupdown'] if (vm_os | d('debian')) in ['debian', 'ubuntu'] else []
+  }}
 
 # VM definition parameters.
 vm_name: '{{ inventory_hostname_short }}'
@@ -55,6 +60,11 @@ vm_image_variant: |-
   }}
 vm_image_arch: amd64
 
+# Rocky Linux cloud image settings.
+vm_image_rocky_ver: '10'
+vm_image_rocky_variant: GenericCloud-Base
+vm_image_rocky_arch: x86_64
+
 # yamllint disable rule:quoted-strings
 _vm_image_url_debian:
   "http://cloud.debian.org/images/cloud/{distro_name}/latest/\
@@ -62,9 +72,17 @@ _vm_image_url_debian:
 _vm_image_url_ubuntu:
   "https://cloud-images.ubuntu.com/{distro_name}/current/\
    {distro_name}-{variant}-{arch}.img"
+_vm_image_url_rocky:
+  "https://dl.rockylinux.org/pub/rocky/{rocky_ver}/images/{arch}/\
+   Rocky-{rocky_ver}-{rocky_variant}.latest.{arch}.qcow2"
 # yamllint enable rule:quoted-strings
 vm_image_url: |-
   {{
+    _vm_image_url_rocky.format(
+      rocky_ver=vm_image_rocky_ver,
+      rocky_variant=vm_image_rocky_variant,
+      arch=vm_image_rocky_arch,
+    ) if vm_os == 'rocky' else
     (
       _vm_image_url_debian if vm_os == 'debian' else
       _vm_image_url_ubuntu
