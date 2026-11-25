@@ -132,14 +132,7 @@ _netconfig__interfaces: |-
   {% endif %}
         pre-up: /sbin/ip addr flush dev $IFACE || true
   {% if pubnet_routed_nets %}
-        up:
-  {% for net, gw in pubnet_routed_nets %}
-          - ip route add {{ net }} via {{ gw }} dev $IFACE
-  {% endfor %}
-        down:
-  {% for net, gw in pubnet_routed_nets %}
-          - ip route del {{ net }} via {{ gw }} dev $IFACE
-  {% endfor %}
+        routes: {{ pubnet_routed_nets | to_json }}
   {% endif %}
   {% endif %}
 
@@ -151,14 +144,7 @@ _netconfig__interfaces: |-
         autoconf: 0
         accept_ra: 0
   {% if pubnet6_routed_nets %}
-        up:
-  {% for net, gw in pubnet6_routed_nets %}
-          - ip route add {{ net }} via {{ gw }} dev $IFACE
-  {% endfor %}
-        down:
-  {% for net, gw in pubnet6_routed_nets %}
-          - ip route del {{ net }} via {{ gw }} dev $IFACE
-  {% endfor %}
+        routes: {{ pubnet6_routed_nets | to_json }}
   {% endif %}
   {% endif %}
   {% endif %}
@@ -184,14 +170,7 @@ _netconfig__interfaces: |-
   {% endif %}
         pre-up: /sbin/ip addr flush dev $IFACE || true
   {% if privnet_routed_nets %}
-        up:
-  {% for net, gw in privnet_routed_nets %}
-          - ip route add {{ net }} via {{ gw }} dev $IFACE
-  {% endfor %}
-        down:
-  {% for net, gw in privnet_routed_nets %}
-          - ip route del {{ net }} via {{ gw }} dev $IFACE
-  {% endfor %}
+        routes: {{ privnet_routed_nets | to_json }}
   {% endif %}
   {% endif %}
 
@@ -203,14 +182,7 @@ _netconfig__interfaces: |-
         autoconf: 0
         accept_ra: 0
   {% if privnet6_routed_nets %}
-        up:
-  {% for net, gw in privnet6_routed_nets %}
-          - ip route add {{ net }} via {{ gw }} dev $IFACE
-  {% endfor %}
-        down:
-  {% for net, gw in privnet6_routed_nets %}
-          - ip route del {{ net }} via {{ gw }} dev $IFACE
-  {% endfor %}
+        routes: {{ privnet6_routed_nets | to_json }}
   {% endif %}
   {% endif %}
   {% endif %}
